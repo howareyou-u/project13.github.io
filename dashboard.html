@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Bot Discord</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <nav class="dashboard-nav">
+            <div class="nav-header">
+                <img src="discord-bot.png" alt="Bot Logo" class="nav-logo">
+                <h2>Panel de Control</h2>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#overview" class="active"><i class="fas fa-home"></i> Vista General</a></li>
+                <li><a href="#commands"><i class="fas fa-terminal"></i> Comandos</a></li>
+                <li><a href="#settings"><i class="fas fa-cog"></i> Configuración</a></li>
+                <li><a href="#stats"><i class="fas fa-chart-bar"></i> Estadísticas</a></li>
+            </ul>
+            <div class="nav-footer">
+                <a href="#" id="logout-button" class="logout-button">Cerrar Sesión</a>
+            </div>
+        </nav>
+        
+        <main class="dashboard-main">
+            <header class="dashboard-header">
+                <h1>Bienvenido al Panel de Control</h1>
+                <div class="user-info">
+                    <img src="" alt="Usuario" id="user-avatar" class="user-avatar">
+                    <span id="username">Cargando...</span>
+                </div>
+            </header>
+            
+            <div class="dashboard-content">
+                <section class="stats-cards">
+                    <div class="stat-card">
+                        <h3>Servidores</h3>
+                        <p id="server-count">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Usuarios</h3>
+                        <p id="user-count">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Comandos Usados</h3>
+                        <p id="commands-count">0</p>
+                    </div>
+                </section>
+                
+                <section class="quick-actions">
+                    <h2>Acciones Rápidas</h2>
+                    <div class="action-buttons">
+                        <button class="action-button">Configurar Comandos</button>
+                        <button class="action-button">Gestionar Permisos</button>
+                        <button class="action-button">Ver Logs</button>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+    
+    <script src="dashboard.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</body>
+</html>
