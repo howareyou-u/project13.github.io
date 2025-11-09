@@ -46,9 +46,7 @@
                 <a href="#features">Características</a>
                 <a href="#commands">Comandos</a>
                 <a href="#stats">Estadísticas</a>
-                <a href="https://discord.com/api/oauth2/authorize?client_id=1200476680280608958&redirect_uri=https%3A%2F%2Fhowareyou-u.github.io%2Fproject13.github.io%2Fcallback.html&response_type=code&scope=identify%20guilds" class="login-button">
-                    <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
-                </a>
+                <div id="auth-area"></div>
             </div>
         </div>
     </nav>
@@ -164,13 +162,63 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const dashboardLink = document.getElementById('dashboard-link');
+            const authArea = document.getElementById('auth-area');
             const token = localStorage.getItem('discord_token');
-            
-            // Actualizar el enlace del dashboard según el estado de autenticación
-                if (token) {
-                dashboardLink.href = '/project13.github.io/dashboard.html';
-            } else {
+            const userStr = localStorage.getItem('discord_user');
+
+            function buildLoginButton(){
+                const a = document.createElement('a');
+                a.className = 'login-button';
+                a.href = 'https://discord.com/api/oauth2/authorize?client_id=1200476680280608958&redirect_uri=https%3A%2F%2Fhowareyou-u.github.io%2Fproject13.github.io%2Fcallback.html&response_type=code&scope=identify%20guilds';
+                a.innerHTML = '<i class="fas fa-sign-in-alt"></i> Iniciar Sesión';
+                authArea.appendChild(a);
                 dashboardLink.href = '/project13.github.io/login.html';
+            }
+
+            function buildUserMenu(user){
+                const wrapper = document.createElement('div');
+                wrapper.className = 'user-menu';
+                const img = document.createElement('img');
+                img.className = 'user-avatar-small';
+                if(user && user.id && user.avatar){
+                    img.src = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`;
+                } else {
+                    img.src = 'https://via.placeholder.com/32';
+                }
+                img.style.width = '32px'; img.style.height = '32px'; img.style.borderRadius = '50%'; img.style.marginRight = '8px';
+                const name = document.createElement('span');
+                name.textContent = user && user.username ? user.username : 'Cuenta';
+                name.className = 'user-name';
+                wrapper.appendChild(img);
+                wrapper.appendChild(name);
+
+                const dropdown = document.createElement('div');
+                dropdown.className = 'user-dropdown';
+                const dash = document.createElement('a');
+                dash.href = '/project13.github.io/dashboard.html';
+                dash.textContent = 'Dashboard';
+                dash.style.display = 'block';
+                dropdown.appendChild(dash);
+                const logout = document.createElement('a');
+                logout.href = '#';
+                logout.textContent = 'Cerrar sesión';
+                logout.style.display = 'block';
+                logout.addEventListener('click', function(e){ e.preventDefault(); localStorage.removeItem('discord_token'); localStorage.removeItem('discord_user'); location.reload(); });
+                dropdown.appendChild(logout);
+                wrapper.appendChild(dropdown);
+
+                authArea.appendChild(wrapper);
+                dashboardLink.href = '/project13.github.io/dashboard.html';
+            }
+
+            if(userStr){
+                let user;
+                try{ user = JSON.parse(userStr); } catch(e){ user = null; }
+                buildUserMenu(user);
+            } else if(token){
+                buildUserMenu(null);
+            } else {
+                buildLoginButton();
             }
 
             // Efecto de scroll suave para los enlaces internos
