@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Callback</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#f6f7f9;color:#111}
+    .card{background:#fff;padding:24px;border-radius:8px;box-shadow:0 6px 18px rgba(12,20,30,0.08);max-width:540px;text-align:center}
+    a{color:#0366d6}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Procesando autenticación…</h2>
+    <p id="msg">Por favor espera — estamos procesando la respuesta del proveedor.</p>
+  </div>
+
+  <script>
+  (function(){
+    const msg = document.getElementById('msg');
+    function redirect(){
+      // Redirigir al dashboard (ajusta si tu ruta es distinta)
+      window.location.replace('/dashboard.html');
+    }
+
+    function saveAndRedirect(kind, value){
+      try{
+        // Guardamos con nombres claros; adapta según tu app
+        if(kind === 'code') localStorage.setItem('oauth_code', value);
+        else if(kind === 'access_token') localStorage.setItem('access_token', value);
+        else if(kind === 'id_token') localStorage.setItem('id_token', value);
+      }catch(e){
+        console.warn('No se pudo guardar en localStorage', e);
+      }
+      msg.textContent = 'Autenticación recibida. Redirigiendo...';
+      setTimeout(redirect, 700);
+    }
+
+    function parseUrl(){
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code');
+      const error = params.get('error');
+      if(error){ msg.textContent = 'Error: ' + error; return true; }
+      if(code){ saveAndRedirect('code', code); return true; }
+
+      // Verificar fragmento (hash) para implicit flow
+      const hash = window.location.hash && window.location.hash.startsWith('#') ? window.location.hash.slice(1) : '';
+      if(hash){
+        const h = new URLSearchParams(hash);
+        const access = h.get('access_token');
+        const idt = h.get('id_token');
+        if(access){ saveAndRedirect('access_token', access); return true; }
+        if(idt){ saveAndRedirect('id_token', idt); return true; }
+      }
+      return false;
+    }
+
+    const ok = parseUrl();
+    if(!ok){
+      msg.innerHTML = 'No se detectó token ni código en la URL. Comprueba que la redirect URI configurada en tu proveedor apunta a <code>/callback.html</code> y que el proveedor usa un flujo compatible con SPAs.<br><br><a href="/index.html">Volver al inicio</a>';
+    }
+  })();
+  </script>
+</body>
+</html>
