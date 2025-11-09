@@ -26,10 +26,12 @@
 
     function saveAndRedirect(kind, value){
       try{
-        // Guardamos con nombres claros; adapta según tu app
+        // Guardamos con nombres claros; dashboard.js espera 'discord_token'
         if(kind === 'code') localStorage.setItem('oauth_code', value);
-        else if(kind === 'access_token') localStorage.setItem('access_token', value);
+        else if(kind === 'access_token' || kind === 'discord_token') localStorage.setItem('discord_token', value);
         else if(kind === 'id_token') localStorage.setItem('id_token', value);
+        else if(kind === 'user') localStorage.setItem('discord_user', value);
+        else if(kind === 'guilds') localStorage.setItem('discord_guilds', value);
       }catch(e){
         console.warn('No se pudo guardar en localStorage', e);
       }
@@ -43,6 +45,18 @@
       const error = params.get('error');
       if(error){ msg.textContent = 'Error: ' + error; return true; }
       if(code){ saveAndRedirect('code', code); return true; }
+
+      // Si el servidor (backend) redirige de vuelta con token y datos en query
+      const tokenParam = params.get('token');
+      const userParam = params.get('user');
+      const guildsParam = params.get('guilds');
+      if(tokenParam){ saveAndRedirect('discord_token', tokenParam); return true; }
+      if(userParam){
+        try{ saveAndRedirect('user', decodeURIComponent(userParam)); }catch(e){ saveAndRedirect('user', userParam); }
+      }
+      if(guildsParam){
+        try{ saveAndRedirect('guilds', decodeURIComponent(guildsParam)); }catch(e){ saveAndRedirect('guilds', guildsParam); }
+      }
 
       // Verificar fragmento (hash) para implicit flow
       const hash = window.location.hash && window.location.hash.startsWith('#') ? window.location.hash.slice(1) : '';
