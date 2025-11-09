@@ -9,9 +9,27 @@ body {
     font-family: Arial, sans-serif;
     background: linear-gradient(45deg, #7289da, #2c2f33);
     min-height: 100vh;
+}
+
+/* Estilos del menú principal */
+.main-container {
+    min-height: 100vh;
     display: flex;
+    flex-direction: column;
+}
+
+.main-nav {
+    background: rgba(32, 34, 37, 0.95);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
 }
 
 .container {
