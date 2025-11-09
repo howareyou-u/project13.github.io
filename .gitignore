@@ -1,0 +1,9 @@
+# Ignorar archivos de configuración con datos sensibles
+auth/.env
+
+# Ignorar módulos de node
+auth/node_modules/
+
+# Ignorar archivos de sistema
+.DS_Store
+Thumbs.db
