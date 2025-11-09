@@ -21,7 +21,7 @@
     const msg = document.getElementById('msg');
     function redirect(){
       // Redirigir al dashboard (ajusta si tu ruta es distinta)
-      window.location.replace('/dashboard.html');
+      window.location.replace('/project13.github.io/dashboard.html');
     }
 
     function saveAndRedirect(kind, value){
@@ -72,7 +72,7 @@
 
     const ok = parseUrl();
     if(!ok){
-      msg.innerHTML = 'No se detectó token ni código en la URL. Comprueba que la redirect URI configurada en tu proveedor apunta a <code>/callback.html</code> y que el proveedor usa un flujo compatible con SPAs.<br><br><a href="/index.html">Volver al inicio</a>';
+      msg.innerHTML = 'No se detectó token ni código en la URL. Comprueba que la redirect URI configurada en tu proveedor apunta a <code>/project13.github.io/callback.html</code> y que el proveedor usa un flujo compatible con SPAs.<br><br><a href="/project13.github.io/index.html">Volver al inicio</a>';
     }
   })();
   </script>
