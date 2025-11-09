@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Project 13 - Bot de Discord</title>
-    <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="/project13.github.io/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Aseguramos que los estilos se apliquen directamente en caso de fallo -->
     <style>
@@ -167,10 +167,10 @@
             const token = localStorage.getItem('discord_token');
             
             // Actualizar el enlace del dashboard según el estado de autenticación
-            if (token) {
-                dashboardLink.href = 'dashboard.html';
+                if (token) {
+                dashboardLink.href = '/project13.github.io/dashboard.html';
             } else {
-                dashboardLink.href = 'login.html';
+                dashboardLink.href = '/project13.github.io/login.html';
             }
 
             // Efecto de scroll suave para los enlaces internos
