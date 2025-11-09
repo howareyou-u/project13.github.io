@@ -8,126 +8,47 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <div class="main-container">
-        <nav class="main-nav">
-            <div class="nav-brand">
-                <img src="https://r2.fivemanage.com/DuglW0KQ0a14nzVrW4W7j/321fc94981ad95534330d383883b2ec3.png" alt="Bot Logo" class="nav-logo">
-                <h2>Mi Bot de Discord</h2>
-            </div>
-            <div class="nav-links">
-                <a href="#home" class="nav-link active">Inicio</a>
-                <a href="#features" class="nav-link">Características</a>
-                <a href="#commands" class="nav-link">Comandos</a>
-                <div id="auth-buttons">
-                    <!-- Los botones se cargarán dinámicamente con JavaScript -->
-                </div>
-            </div>
-        </nav>
-
-        <div class="hero-section">
-            <div class="hero-content">
-                <h1>¡Potencia tu servidor de Discord!</h1>
-                <p class="hero-description">Un bot todo en uno con moderación, música, juegos y mucho más.</p>
-                <div class="hero-buttons">
-                    <a href="https://discord.com/api/oauth2/authorize?client_id=1200476680280608958&permissions=8&scope=bot%20applications.commands" class="primary-button">
-                        <i class="fas fa-plus"></i> Invitar Bot
-                    </a>
-                    <a href="#" id="dashboard-button" class="secondary-button">
-                        <i class="fas fa-cog"></i> Dashboard
-                    </a>
-                </div>
-            </div>
+    <div class="main-menu">
+        <div class="bot-info">
+            <img src="https://r2.fivemanage.com/DuglW0KQ0a14nzVrW4W7j/321fc94981ad95534330d383883b2ec3.png" alt="Bot Logo" class="bot-logo">
+            <h1>Mi Bot de Discord</h1>
+            <p class="bot-description">Un bot todo en uno con moderación, música, juegos y mucho más.</p>
         </div>
 
-        <section id="features" class="features-section">
-            <h2>Características Principales</h2>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <i class="fas fa-shield-alt"></i>
-                    <h3>Moderación</h3>
-                    <p>Sistema avanzado de moderación para mantener tu servidor seguro.</p>
-                </div>
-                <div class="feature-card">
-                    <i class="fas fa-music"></i>
-                    <h3>Música</h3>
-                    <p>Reproduce música de alta calidad desde varias plataformas.</p>
-                </div>
-                <div class="feature-card">
-                    <i class="fas fa-gamepad"></i>
-                    <h3>Mini Juegos</h3>
-                    <p>Diviértete con una variedad de juegos interactivos.</p>
-                </div>
-                <div class="feature-card">
-                    <i class="fas fa-cogs"></i>
-                    <h3>Personalizable</h3>
-                    <p>Configura el bot según las necesidades de tu servidor.</p>
-                </div>
-            </div>
-        </section>
+        <div class="menu-buttons">
+            <a href="https://discord.com/api/oauth2/authorize?client_id=1200476680280608958&permissions=8&scope=bot%20applications.commands" class="menu-button invite-button">
+                <i class="fas fa-plus"></i>
+                <span>Añadir a Discord</span>
+                <p class="button-description">Invita el bot a tu servidor</p>
+            </a>
+
+            <a href="https://discord.com/api/oauth2/authorize?client_id=1200476680280608958&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&response_type=code&scope=identify%20guilds" class="menu-button login-button">
+                <i class="fas fa-sign-in-alt"></i>
+                <span>Iniciar Sesión</span>
+                <p class="button-description">Con tu cuenta de Discord</p>
+            </a>
+
+            <a href="#" id="dashboard-button" class="menu-button dashboard-button">
+                <i class="fas fa-cog"></i>
+                <span>Dashboard</span>
+                <p class="button-description">Configura el bot</p>
+            </a>
+        </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const authButtons = document.getElementById('auth-buttons');
             const dashboardButton = document.getElementById('dashboard-button');
-
+            
             // Comprobar si el usuario está autenticado
-            function checkAuth() {
-                const token = localStorage.getItem('discord_token');
-                if (token) {
-                    // Usuario autenticado
-                    authButtons.innerHTML = `
-                        <a href="#" class="nav-link login-status">
-                            <img src="" alt="" id="user-avatar" class="user-mini-avatar">
-                            <span id="username">Cargando...</span>
-                        </a>
-                        <a href="#" class="nav-link logout-link">Cerrar Sesión</a>
-                    `;
-                    dashboardButton.href = 'dashboard.html';
-                    loadUserData(token);
-                } else {
-                    // Usuario no autenticado
-                    authButtons.innerHTML = `
-                        <a href="https://discord.com/api/oauth2/authorize?client_id=1200476680280608958&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&response_type=code&scope=identify%20guilds" class="nav-link login-link">
-                            Iniciar Sesión
-                        </a>
-                    `;
-                    dashboardButton.href = 'login.html';
-                }
+            const token = localStorage.getItem('discord_token');
+            
+            // Actualizar el enlace del dashboard según el estado de autenticación
+            if (token) {
+                dashboardButton.href = 'dashboard.html';
+            } else {
+                dashboardButton.href = 'login.html';
             }
-
-            // Cargar datos del usuario
-            function loadUserData(token) {
-                fetch('https://discord.com/api/users/@me', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('username').textContent = data.username;
-                    const avatar = document.getElementById('user-avatar');
-                    avatar.src = `https://cdn.discordapp.com/avatars/${data.id}/${data.avatar}.png`;
-                    avatar.alt = data.username;
-                })
-                .catch(error => {
-                    console.error('Error loading user data:', error);
-                    localStorage.removeItem('discord_token');
-                    checkAuth();
-                });
-            }
-
-            // Manejar el cierre de sesión
-            document.addEventListener('click', function(e) {
-                if (e.target.classList.contains('logout-link')) {
-                    e.preventDefault();
-                    localStorage.removeItem('discord_token');
-                    window.location.reload();
-                }
-            });
-
-            // Comprobar autenticación al cargar
-            checkAuth();
         });
     </script>
 </body>
