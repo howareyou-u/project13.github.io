@@ -7,6 +7,39 @@
     <link rel="stylesheet" href="/project13.github.io/styles.css">
 </head>
 <body>
+    <script>
+        // If the backend redirected here with token/user/guilds in the query string,
+        // save them to localStorage and redirect to the homepage so the site shows
+        // the logged-in state (avatar/name). This breaks the login->callback->login loop
+        // when the backend sends the token directly to /dashboard.html.
+        (function(){
+            try{
+                const params = new URLSearchParams(window.location.search);
+                const token = params.get('token');
+                const user = params.get('user');
+                const guilds = params.get('guilds');
+                let saved = false;
+                if(token){
+                    localStorage.setItem('discord_token', token);
+                    saved = true;
+                }
+                if(user){
+                    try{ localStorage.setItem('discord_user', decodeURIComponent(user)); }catch(e){ localStorage.setItem('discord_user', user); }
+                    saved = true;
+                }
+                if(guilds){
+                    try{ localStorage.setItem('discord_guilds', decodeURIComponent(guilds)); }catch(e){ localStorage.setItem('discord_guilds', guilds); }
+                    saved = true;
+                }
+                if(saved){
+                    // Remove query params to avoid leaking tokens in URL and go to index
+                    const origin = window.location.origin;
+                    const base = '/project13.github.io/index.html';
+                    window.location.replace(origin + base);
+                }
+            }catch(e){ console.warn('Error processing token params', e); }
+        })();
+    </script>
     <div class="dashboard-container">
         <nav class="dashboard-nav">
             <div class="nav-header">
