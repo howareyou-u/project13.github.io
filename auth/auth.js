@@ -4,9 +4,10 @@ function handleAuth() {
     localStorage.setItem('auth_redirect', window.location.href);
     
     // Redirigir a Discord para autenticación
+    // Nota: usamos el endpoint de Vercel como redirect_uri (serverless callback)
     window.location.href = 'https://discord.com/api/oauth2/authorize' +
         '?client_id=1200476680280608958' +
-        '&redirect_uri=' + encodeURIComponent('https://howareyou-u.github.io/project13.github.io/callback') +
+        '&redirect_uri=' + encodeURIComponent('https://project13-github-io.vercel.app/api/callback') +
         '&response_type=code' +
         '&scope=identify%20guilds';
 }
@@ -20,7 +21,8 @@ async function checkAuth() {
     }
 
     try {
-        const response = await fetch('https://howareyou-u.github.io/project13.github.io/verify', {
+        // Verificación vía la API en Vercel
+        const response = await fetch('https://project13-github-io.vercel.app/api/verify', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -98,8 +100,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Si estamos en la página de callback, manejar la respuesta
-    if (window.location.pathname === '/callback') {
-        handleCallback();
-    }
+    // Intentar manejar un token si viene en los parámetros de la URL
+    // (llega aquí después de que el servidor en Vercel redirija al frontend)
+    handleCallback();
 });
