@@ -8,47 +8,166 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <div class="main-menu">
-        <div class="bot-info">
-            <img src="https://r2.fivemanage.com/DuglW0KQ0a14nzVrW4W7j/321fc94981ad95534330d383883b2ec3.png" alt="Bot Logo" class="bot-logo">
-            <h1>Mi Bot de Discord</h1>
-            <p class="bot-description">Un bot todo en uno con moderación, música, juegos y mucho más.</p>
+    <nav class="navbar">
+        <div class="nav-content">
+            <div class="nav-logo">
+                <img src="https://r2.fivemanage.com/DuglW0KQ0a14nzVrW4W7j/321fc94981ad95534330d383883b2ec3.png" alt="Bot Logo">
+                <span>Mi Bot</span>
+            </div>
+            <div class="nav-links">
+                <a href="#features">Características</a>
+                <a href="#commands">Comandos</a>
+                <a href="#stats">Estadísticas</a>
+                <a href="https://discord.com/api/oauth2/authorize?client_id=1200476680280608958&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&response_type=code&scope=identify%20guilds" class="login-button">
+                    <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+                </a>
+            </div>
         </div>
+    </nav>
 
-        <div class="menu-buttons">
-            <a href="https://discord.com/api/oauth2/authorize?client_id=1200476680280608958&permissions=8&scope=bot%20applications.commands" class="menu-button invite-button">
-                <i class="fas fa-plus"></i>
-                <span>Añadir a Discord</span>
-                <p class="button-description">Invita el bot a tu servidor</p>
-            </a>
-
-            <a href="https://discord.com/api/oauth2/authorize?client_id=1200476680280608958&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&response_type=code&scope=identify%20guilds" class="menu-button login-button">
-                <i class="fas fa-sign-in-alt"></i>
-                <span>Iniciar Sesión</span>
-                <p class="button-description">Con tu cuenta de Discord</p>
-            </a>
-
-            <a href="#" id="dashboard-button" class="menu-button dashboard-button">
-                <i class="fas fa-cog"></i>
-                <span>Dashboard</span>
-                <p class="button-description">Configura el bot</p>
-            </a>
+    <header class="hero">
+        <div class="hero-content">
+            <img src="https://r2.fivemanage.com/DuglW0KQ0a14nzVrW4W7j/321fc94981ad95534330d383883b2ec3.png" alt="Bot Logo" class="hero-logo">
+            <h1>La mejor experiencia para tu servidor de Discord</h1>
+            <p>Moderación avanzada, música, juegos y mucho más en un solo bot</p>
+            <div class="hero-buttons">
+                <a href="https://discord.com/api/oauth2/authorize?client_id=1200476680280608958&permissions=8&scope=bot%20applications.commands" class="primary-button">
+                    <i class="fas fa-plus"></i> Añadir al Servidor
+                </a>
+                <a href="#features" class="secondary-button">
+                    <i class="fas fa-info-circle"></i> Más Información
+                </a>
+            </div>
         </div>
-    </div>
+        <div class="hero-stats">
+            <div class="stat-item">
+                <span class="stat-number">500+</span>
+                <span class="stat-label">Servidores</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">50K+</span>
+                <span class="stat-label">Usuarios</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">99.9%</span>
+                <span class="stat-label">Uptime</span>
+            </div>
+        </div>
+    </header>
+
+    <section id="features" class="features">
+        <h2>Características Principales</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <i class="fas fa-shield-alt"></i>
+                <h3>Moderación Avanzada</h3>
+                <p>Sistema completo de moderación con logs, filtros y automod</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-music"></i>
+                <h3>Música HD</h3>
+                <p>Reproduce música de alta calidad desde YouTube, Spotify y más</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-ticket-alt"></i>
+                <h3>Sistema de Tickets</h3>
+                <p>Gestiona el soporte de tu servidor con tickets personalizados</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-chart-bar"></i>
+                <h3>Estadísticas</h3>
+                <p>Analiza la actividad de tu servidor con gráficos detallados</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="commands" class="commands">
+        <h2>Comandos Populares</h2>
+        <div class="commands-grid">
+            <div class="command-card">
+                <code>/setup</code>
+                <p>Configura el bot en tu servidor</p>
+            </div>
+            <div class="command-card">
+                <code>/play</code>
+                <p>Reproduce música en tu canal de voz</p>
+            </div>
+            <div class="command-card">
+                <code>/ticket</code>
+                <p>Crea un nuevo ticket de soporte</p>
+            </div>
+            <div class="command-card">
+                <code>/ban</code>
+                <p>Banea a usuarios problemáticos</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="stats" class="stats">
+        <div class="stats-content">
+            <h2>¿Por qué elegir nuestro bot?</h2>
+            <div class="stats-grid">
+                <div class="stats-card">
+                    <i class="fas fa-bolt"></i>
+                    <h3>Rápido y Confiable</h3>
+                    <p>Tiempo de respuesta inferior a 100ms</p>
+                </div>
+                <div class="stats-card">
+                    <i class="fas fa-lock"></i>
+                    <h3>Seguro</h3>
+                    <p>Protección contra raids y spam</p>
+                </div>
+                <div class="stats-card">
+                    <i class="fas fa-clock"></i>
+                    <h3>24/7 Online</h3>
+                    <p>Disponibilidad garantizada</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-logo">
+                <img src="https://r2.fivemanage.com/DuglW0KQ0a14nzVrW4W7j/321fc94981ad95534330d383883b2ec3.png" alt="Bot Logo">
+                <span>Mi Bot</span>
+            </div>
+            <div class="footer-links">
+                <a href="https://discord.gg/tuserver" target="_blank">
+                    <i class="fab fa-discord"></i> Servidor de Soporte
+                </a>
+                <a href="https://twitter.com/tubot" target="_blank">
+                    <i class="fab fa-twitter"></i> Twitter
+                </a>
+                <a href="#" id="dashboard-link">
+                    <i class="fas fa-cog"></i> Dashboard
+                </a>
+            </div>
+            <p class="footer-copyright">© 2025 Mi Bot - Todos los derechos reservados</p>
+        </div>
+    </footer>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const dashboardButton = document.getElementById('dashboard-button');
-            
-            // Comprobar si el usuario está autenticado
+            const dashboardLink = document.getElementById('dashboard-link');
             const token = localStorage.getItem('discord_token');
             
             // Actualizar el enlace del dashboard según el estado de autenticación
             if (token) {
-                dashboardButton.href = 'dashboard.html';
+                dashboardLink.href = 'dashboard.html';
             } else {
-                dashboardButton.href = 'login.html';
+                dashboardLink.href = 'login.html';
             }
+
+            // Efecto de scroll suave para los enlaces internos
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
         });
     </script>
 </body>
