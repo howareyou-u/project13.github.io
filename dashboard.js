@@ -4,10 +4,13 @@ document.addEventListener('DOMContentLoaded', function() {
     checkAuth();
 
     // Manejar el cierre de sesión
-    document.getElementById('logout-button').addEventListener('click', function(e) {
-        e.preventDefault();
-        logout();
-    });
+    const logoutBtn = document.getElementById('logout-button');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            logout();
+        });
+    }
 });
 
 function getCookie(name) {
@@ -22,22 +25,27 @@ function getCookie(name) {
     return null;
 }
 
+function getUrlParam(param) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(param);
+}
+
 function checkAuth() {
-    // Comprobar si hay un token en cookies o localStorage
-    let token = getCookie('discord_token') || localStorage.getItem('discord_token');
+    // Intentar obtener token de URL, cookies o localStorage (en ese orden)
+    let token = getUrlParam('token') || getCookie('discord_token') || localStorage.getItem('discord_token');
     
     if (!token) {
+        console.log('No token found, redirecting to login');
         window.location.href = './login.html';
         return;
     }
 
     // Guardar token en localStorage para acceso futuro
-    if (!localStorage.getItem('discord_token')) {
-        localStorage.setItem('discord_token', token);
-    }
+    localStorage.setItem('discord_token', token);
 
-    // Cargar datos del usuario desde cookies o localStorage
+    // Intentar obtener userData de cookies o localStorage
     let userData = getCookie('discord_user') || localStorage.getItem('discord_user');
+    
     if (userData) {
         try {
             userData = JSON.parse(userData);
@@ -45,17 +53,30 @@ function checkAuth() {
             displayUserData(userData);
         } catch (e) {
             console.error('Error parsing user data:', e);
+            loadUserData(token);
         }
     } else {
+        // Si no tenemos userData, cargarla desde la API de Discord
         loadUserData(token);
+    }
+
+    // Limpiar URL para evitar que el token quede visible
+    if (token === getUrlParam('token')) {
+        window.history.replaceState({}, document.title, './dashboard.html');
     }
 }
 
 function displayUserData(userData) {
     if (userData && userData.username) {
-        document.getElementById('username').textContent = userData.username;
-        if (userData.id && userData.avatar) {
-            document.getElementById('user-avatar').src = `https://cdn.discordapp.com/avatars/${userData.id}/${userData.avatar}.png`;
+        const usernameEl = document.getElementById('username');
+        const avatarEl = document.getElementById('user-avatar');
+        
+        if (usernameEl) {
+            usernameEl.textContent = userData.username;
+        }
+        
+        if (avatarEl && userData.id && userData.avatar) {
+            avatarEl.src = `https://cdn.discordapp.com/avatars/${userData.id}/${userData.avatar}.png`;
         }
     }
 }
@@ -67,7 +88,12 @@ function loadUserData(token) {
             'Authorization': `Bearer ${token}`
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to load user data');
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.username) {
             localStorage.setItem('discord_user', JSON.stringify(data));
@@ -83,14 +109,17 @@ function loadUserData(token) {
 }
 
 function logout() {
-    // Limpiar cookies y localStorage
+    // Limpiar cookies
     document.cookie = 'discord_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
     document.cookie = 'discord_user=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
     document.cookie = 'discord_guilds=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
     
+    // Limpiar localStorage
     localStorage.removeItem('discord_token');
     localStorage.removeItem('discord_user');
     localStorage.removeItem('discord_guilds');
     
+    // Redirigir a login
     window.location.href = './login.html';
 }
+

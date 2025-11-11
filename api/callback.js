@@ -6,10 +6,6 @@ module.exports = async (req, res) => {
 
     console.log('=== Callback Debug ===');
     console.log('Code:', code);
-    console.log('CLIENT_ID:', process.env.CLIENT_ID);
-    console.log('CLIENT_SECRET:', process.env.CLIENT_SECRET ? 'SET' : 'NOT SET');
-    console.log('REDIRECT_URI:', process.env.REDIRECT_URI);
-    console.log('FRONTEND_URI:', process.env.FRONTEND_URI);
 
     if (!code) {
       return res.status(400).send('No code provided');
@@ -35,12 +31,9 @@ module.exports = async (req, res) => {
 
     const tokenData = await tokenResponse.json();
 
-    console.log('Token Response Status:', tokenResponse.status);
-    console.log('Token Data:', tokenData);
-
     if (tokenData.error) {
       console.error('Token error', tokenData);
-      return res.status(500).json({ error: 'Token exchange failed', details: tokenData });
+      return res.status(500).send(`Token error: ${tokenData.error_description}`);
     }
 
     // Get user info
@@ -52,8 +45,6 @@ module.exports = async (req, res) => {
 
     const userData = await userResp.json();
 
-    console.log('User Data:', userData);
-
     // Get guilds
     const guildsResp = await fetch('https://discord.com/api/users/@me/guilds', {
       headers: {
@@ -63,18 +54,18 @@ module.exports = async (req, res) => {
 
     const guildsData = await guildsResp.json();
 
-    console.log('Guilds Data:', guildsData);
+    console.log('Token obtained successfully');
 
-    // Establecer cookies con los datos
-    res.setHeader('Set-Cookie', [
-      `discord_token=${encodeURIComponent(tokenData.access_token)}; Path=/; Max-Age=86400; HttpOnly; Secure; SameSite=Strict`,
-      `discord_user=${encodeURIComponent(JSON.stringify(userData))}; Path=/; Max-Age=86400; HttpOnly; Secure; SameSite=Strict`,
-      `discord_guilds=${encodeURIComponent(JSON.stringify(guildsData))}; Path=/; Max-Age=86400; HttpOnly; Secure; SameSite=Strict`
-    ]);
-
-    // Redirect back to frontend sin pasar datos en URL
+    // Redirigir al dashboard con token (sin pasar usuario/guildos en URL para evitar URI_TOO_LONG)
+    // El frontend hará una petición adicional para obtener estos datos
     const frontend = process.env.FRONTEND_URI || 'https://project13-api.vercel.app';
-    const redirectUrl = `${frontend}/dashboard.html?success=true`;
+    const redirectUrl = `${frontend}/dashboard.html?token=${encodeURIComponent(tokenData.access_token)}`;
+
+    // Establecer cookies sin HttpOnly para que puedan ser leídas desde JavaScript
+    res.setHeader('Set-Cookie', [
+      `discord_token=${encodeURIComponent(tokenData.access_token)}; Path=/; Max-Age=86400; Secure; SameSite=Lax`,
+      `discord_user=${encodeURIComponent(JSON.stringify(userData))}; Path=/; Max-Age=86400; Secure; SameSite=Lax`
+    ]);
 
     console.log('Redirecting to:', redirectUrl);
 
@@ -82,8 +73,9 @@ module.exports = async (req, res) => {
 
   } catch (err) {
     console.error('Callback error:', err);
-    return res.status(500).json({ error: 'Internal server error', message: err.message });
+    return res.status(500).send(`Error: ${err.message}`);
   }
 };
+
 
 
