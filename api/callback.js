@@ -48,8 +48,8 @@ module.exports = async (req, res) => {
 
     const guildsData = await guildsResp.json();
 
-    // Redirect back to frontend (GitHub Pages) carrying token and user info
-    const frontend = process.env.FRONTEND_URI || 'https://howareyou-u.github.io/project13.github.io';
+    // Redirect back to frontend carrying token and user info
+    const frontend = process.env.FRONTEND_URI || 'https://project13-api.vercel.app';
     const redirectUrl = `${frontend}/dashboard.html?token=${encodeURIComponent(tokenData.access_token)}&user=${encodeURIComponent(JSON.stringify(userData))}&guilds=${encodeURIComponent(JSON.stringify(guildsData))}`;
 
     return res.writeHead(302, { Location: redirectUrl }).end();
