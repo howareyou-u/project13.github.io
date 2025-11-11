@@ -1,0 +1,9 @@
+# Archivo .env para tu bot local (NO en Vercel)
+# Copia este contenido a un archivo .env en tu carpeta del bot
+
+# Token de tu bot (obtén esto del Discord Developer Portal)
+DISCORD_TOKEN=tu_bot_token_aqui
+
+# Variables opcionales para conectar con la API
+API_URL=https://project13-api.vercel.app
+API_TOKEN=token_opcional_para_autenticar_requests
