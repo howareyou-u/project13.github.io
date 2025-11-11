@@ -60,9 +60,11 @@ function checkAuth() {
         loadUserData(token);
     }
 
-    // Limpiar URL para evitar que el token quede visible
+    // Limpiar URL para evitar que el token quede visible y asegurar que la URL es correcta
     if (token === getUrlParam('token')) {
-        window.history.replaceState({}, document.title, './dashboard.html');
+        // Usar replaceState para no tener el token en el historial
+        const cleanUrl = window.location.origin + '/dashboard.html';
+        window.history.replaceState({}, document.title, cleanUrl);
     }
 }
 
