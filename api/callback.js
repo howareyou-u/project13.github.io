@@ -65,9 +65,16 @@ module.exports = async (req, res) => {
 
     console.log('Guilds Data:', guildsData);
 
-    // Redirect back to frontend carrying token and user info
+    // Establecer cookies con los datos
+    res.setHeader('Set-Cookie', [
+      `discord_token=${encodeURIComponent(tokenData.access_token)}; Path=/; Max-Age=86400; HttpOnly; Secure; SameSite=Strict`,
+      `discord_user=${encodeURIComponent(JSON.stringify(userData))}; Path=/; Max-Age=86400; HttpOnly; Secure; SameSite=Strict`,
+      `discord_guilds=${encodeURIComponent(JSON.stringify(guildsData))}; Path=/; Max-Age=86400; HttpOnly; Secure; SameSite=Strict`
+    ]);
+
+    // Redirect back to frontend sin pasar datos en URL
     const frontend = process.env.FRONTEND_URI || 'https://project13-api.vercel.app';
-    const redirectUrl = `${frontend}/dashboard.html?token=${encodeURIComponent(tokenData.access_token)}&user=${encodeURIComponent(JSON.stringify(userData))}&guilds=${encodeURIComponent(JSON.stringify(guildsData))}`;
+    const redirectUrl = `${frontend}/dashboard.html?success=true`;
 
     console.log('Redirecting to:', redirectUrl);
 
@@ -78,4 +85,5 @@ module.exports = async (req, res) => {
     return res.status(500).json({ error: 'Internal server error', message: err.message });
   }
 };
+
 
