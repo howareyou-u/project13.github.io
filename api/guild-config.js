@@ -33,9 +33,22 @@ module.exports = async (req, res) => {
     const channels = await channelsResponse.json();
     const textChannels = channels.filter(ch => ch.type === 0); // Type 0 = Text channel
 
-    // TODO: Obtener configuración guardada en base de datos
-    // Por ahora retornamos configuración por defecto
-    const config = {
+    // Intentar obtener configuración guardada en la base de datos (MongoDB)
+    const mongo = require('./mongo');
+    let dbConfig = null;
+    try {
+      const col = await mongo.getCollection();
+      if (col) {
+        const doc = await col.findOne({ guildId: guildId });
+        dbConfig = doc?.config || null;
+      }
+    } catch (e) {
+      console.error('Error reading config from MongoDB:', e.message || e);
+      dbConfig = null;
+    }
+
+    // Por ahora retornamos configuración por defecto si no hay config en BD
+    const config = dbConfig || {
       welcome: {
         enabled: true,
         channel: textChannels[0]?.id || null,

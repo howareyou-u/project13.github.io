@@ -29,14 +29,26 @@ module.exports = async (req, res) => {
       return res.status(403).json({ error: 'Not authorized to modify this guild' });
     }
 
-    // TODO: Guardar configuración en base de datos
-    // Aquí guardarías la configuración en tu BD:
-    // await saveGuildConfig(guildId, config);
+    // Guardar configuración en MongoDB si está disponible
+    try {
+      const mongo = require('./mongo');
+      const col = await mongo.getCollection();
+      if (col) {
+        await col.updateOne(
+          { guildId },
+          { $set: { guildId, config, updatedAt: new Date() } },
+          { upsert: true }
+        );
+        return res.status(200).json({ success: true, message: 'Configuration saved to DB', config });
+      }
+    } catch (e) {
+      console.error('Error saving config to MongoDB:', e.message || e);
+    }
 
-    // Por ahora solo confirmamos
+    // Si no hay DB configurada, devolver confirmación temporal
     res.status(200).json({ 
       success: true, 
-      message: 'Configuration saved successfully',
+      message: 'Configuration received (DB not configured)',
       config: config
     });
 
