@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Callback</title>
-  <link rel="stylesheet" href="/project13.github.io/styles.css">
+  <link rel="stylesheet" href="./styles.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
     /* Estilos mínimos para callback */
@@ -28,7 +28,7 @@
     const msg = document.getElementById('msg');
     function redirect(){
       // Redirigir al dashboard (ajusta si tu ruta es distinta)
-      window.location.replace('/project13.github.io/dashboard.html');
+      window.location.replace('./dashboard.html');
     }
 
     function saveAndRedirect(kind, value){
@@ -79,7 +79,7 @@
 
     const ok = parseUrl();
     if(!ok){
-      msg.innerHTML = 'No se detectó token ni código en la URL. Comprueba que la redirect URI configurada en tu proveedor apunta a <code>/project13.github.io/callback.html</code> y que el proveedor usa un flujo compatible con SPAs.<br><br><a href="/project13.github.io/index.html">Volver al inicio</a>';
+      msg.innerHTML = 'No se detectó token ni código en la URL. Comprueba que la redirect URI configurada en tu proveedor apunta a <code>/callback.html</code> y que el proveedor usa un flujo compatible con SPAs.<br><br><a href="./index.html">Volver al inicio</a>';
     }
   })();
   </script>

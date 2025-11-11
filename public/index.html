@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Project 13 - Bot de Discord</title>
-    <link rel="stylesheet" href="/project13.github.io/styles.css">
+    <link rel="stylesheet" href="./styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Aseguramos que los estilos se apliquen directamente en caso de fallo -->
     <style>
@@ -169,10 +169,10 @@
             function buildLoginButton(){
                 const a = document.createElement('a');
                 a.className = 'login-button';
-                a.href = 'https://discord.com/api/oauth2/authorize?client_id=1200476680280608958&redirect_uri=https%3A%2F%2Fhowareyou-u.github.io%2Fproject13.github.io%2Fcallback.html&response_type=code&scope=identify%20guilds';
+                a.href = 'https://discord.com/api/oauth2/authorize?client_id=1200476680280608958&redirect_uri=https%3A%2F%2Fproject13-api.vercel.app%2Fapi%2Fcallback&response_type=code&scope=identify%20guilds';
                 a.innerHTML = '<i class="fas fa-sign-in-alt"></i> Iniciar Sesión';
                 authArea.appendChild(a);
-                dashboardLink.href = '/project13.github.io/login.html';
+                dashboardLink.href = './login.html';
             }
 
             function buildUserMenu(user){
@@ -195,7 +195,7 @@
                 const dropdown = document.createElement('div');
                 dropdown.className = 'user-dropdown';
                 const dash = document.createElement('a');
-                dash.href = '/project13.github.io/dashboard.html';
+                dash.href = './dashboard.html';
                 dash.textContent = 'Dashboard';
                 dash.style.display = 'block';
                 dropdown.appendChild(dash);
@@ -208,7 +208,7 @@
                 wrapper.appendChild(dropdown);
 
                 authArea.appendChild(wrapper);
-                dashboardLink.href = '/project13.github.io/dashboard.html';
+                dashboardLink.href = './dashboard.html';
             }
 
             if(userStr){
