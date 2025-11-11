@@ -1,0 +1,12 @@
+# Node modules for the bot
+node_modules/
+
+# Local environment file
+.env
+
+# Optional logs and data
+logs/
+*.log
+
+# Build artifacts
+dist/

@@ -4,6 +4,10 @@ auth/.env
 # Ignorar módulos de node
 auth/node_modules/
 node_modules/
+bot/node_modules/
+
+# Ignorar archivos locales del bot
+bot/.env
 
 # Ignorar archivos de sistema
 .DS_Store
