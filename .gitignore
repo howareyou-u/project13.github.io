@@ -3,6 +3,7 @@ auth/.env
 
 # Ignorar módulos de node
 auth/node_modules/
+node_modules/
 
 # Ignorar archivos de sistema
 .DS_Store
