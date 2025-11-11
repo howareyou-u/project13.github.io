@@ -6,62 +6,680 @@
     <title>Dashboard - Bot Discord</title>
     <link rel="stylesheet" href="./styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .dashboard-sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 250px;
+            height: 100vh;
+            background: #2f3136;
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 1px solid #202225;
+        }
+
+        .dashboard-main-content {
+            margin-left: 250px;
+            padding: 20px;
+            min-height: 100vh;
+            background: #36393f;
+        }
+
+        .sidebar-category {
+            margin-bottom: 20px;
+        }
+
+        .category-title {
+            color: #72767d;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 0 10px;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .category-items {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .sidebar-item {
+            color: #b5bac1;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .sidebar-item:hover {
+            background: #3f4147;
+            color: #fff;
+        }
+
+        .sidebar-item.active {
+            background: #5865f2;
+            color: #fff;
+        }
+
+        .sidebar-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .content-section {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #202225;
+            padding-bottom: 20px;
+        }
+
+        .section-header h2 {
+            color: #fff;
+            font-size: 24px;
+            margin: 0;
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .config-card {
+            background: #2f3136;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #202225;
+        }
+
+        .config-card h3 {
+            color: #fff;
+            margin: 0 0 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .config-card i {
+            color: #5865f2;
+            font-size: 18px;
+        }
+
+        .config-field {
+            margin-bottom: 15px;
+        }
+
+        .config-field label {
+            display: block;
+            color: #b5bac1;
+            font-size: 12px;
+            margin-bottom: 5px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .config-field input,
+        .config-field select,
+        .config-field textarea {
+            width: 100%;
+            background: #40444b;
+            border: 1px solid #202225;
+            color: #fff;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .config-field input:focus,
+        .config-field select:focus,
+        .config-field textarea:focus {
+            outline: none;
+            border-color: #5865f2;
+            background: #36393f;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            flex: 1;
+        }
+
+        .btn-primary {
+            background: #5865f2;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #4752c4;
+        }
+
+        .btn-secondary {
+            background: #40444b;
+            color: #b5bac1;
+        }
+
+        .btn-secondary:hover {
+            background: #36393f;
+        }
+
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: #40444b;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        .toggle-switch label {
+            color: #fff;
+            cursor: pointer;
+            margin: 0;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #40444b;
+            transition: 0.4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #5865f2;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .user-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #2f3136;
+            border-radius: 8px;
+        }
+
+        .user-avatar-large {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            border: 3px solid #5865f2;
+        }
+
+        .user-info {
+            color: #fff;
+        }
+
+        .user-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .user-status {
+            color: #b5bac1;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid #202225;
+                max-height: 300px;
+                overflow-y: auto;
+            }
+
+            .dashboard-main-content {
+                margin-left: 0;
+            }
+
+            .config-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="dashboard-container">
-        <nav class="dashboard-nav">
-            <div class="nav-header">
-                <img src="discord-bot.png" alt="Bot Logo" class="nav-logo">
-                <h2>Panel de Control</h2>
-            </div>
-            <ul class="nav-menu">
-                <li><a href="#overview" class="active"><i class="fas fa-home"></i> Vista General</a></li>
-                <li><a href="#commands"><i class="fas fa-terminal"></i> Comandos</a></li>
-                <li><a href="#settings"><i class="fas fa-cog"></i> Configuración</a></li>
-                <li><a href="#stats"><i class="fas fa-chart-bar"></i> Estadísticas</a></li>
-            </ul>
-            <div class="nav-footer">
-                <a href="#" id="logout-button" class="logout-button">Cerrar Sesión</a>
-            </div>
-        </nav>
-        
-        <main class="dashboard-main">
-            <header class="dashboard-header">
-                <h1>Bienvenido al Panel de Control</h1>
+    <div class="dashboard-container" style="display: flex;">
+        <!-- Sidebar -->
+        <div class="dashboard-sidebar">
+            <div class="user-header">
+                <img id="user-avatar" class="user-avatar-large" src="https://via.placeholder.com/64" alt="Usuario">
                 <div class="user-info">
-                    <img src="" alt="Usuario" id="user-avatar" class="user-avatar">
-                    <span id="username">Cargando...</span>
+                    <div class="user-name" id="username">Cargando...</div>
+                    <div class="user-status">Bot Admin</div>
                 </div>
-            </header>
-            
-            <div class="dashboard-content">
-                <section class="stats-cards">
-                    <div class="stat-card">
-                        <h3>Servidores</h3>
-                        <p id="server-count">0</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Usuarios</h3>
-                        <p id="user-count">0</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Comandos Usados</h3>
-                        <p id="commands-count">0</p>
-                    </div>
-                </section>
-                
-                <section class="quick-actions">
-                    <h2>Acciones Rápidas</h2>
-                    <div class="action-buttons">
-                        <button class="action-button">Configurar Comandos</button>
-                        <button class="action-button">Gestionar Permisos</button>
-                        <button class="action-button">Ver Logs</button>
-                    </div>
-                </section>
             </div>
-        </main>
+
+            <!-- Mensajes -->
+            <div class="sidebar-category">
+                <div class="category-title">📬 Mensajes</div>
+                <div class="category-items">
+                    <div class="sidebar-item active" onclick="showSection(event, 'bienvenidas')">
+                        <i class="fas fa-door-open"></i> Bienvenidas
+                    </div>
+                    <div class="sidebar-item" onclick="showSection(event, 'despedidas')">
+                        <i class="fas fa-door-closed"></i> Despedidas
+                    </div>
+                    <div class="sidebar-item" onclick="showSection(event, 'invite-tracker')">
+                        <i class="fas fa-users"></i> Invite Tracker
+                    </div>
+                </div>
+            </div>
+
+            <!-- Moderación -->
+            <div class="sidebar-category">
+                <div class="category-title">🛡️ Moderación</div>
+                <div class="category-items">
+                    <div class="sidebar-item" onclick="showSection(event, 'automod')">
+                        <i class="fas fa-shield-alt"></i> AutoMod
+                    </div>
+                    <div class="sidebar-item" onclick="showSection(event, 'logs')">
+                        <i class="fas fa-book"></i> Logs
+                    </div>
+                    <div class="sidebar-item" onclick="showSection(event, 'infracciones')">
+                        <i class="fas fa-gavel"></i> Infracciones
+                    </div>
+                </div>
+            </div>
+
+            <!-- Música -->
+            <div class="sidebar-category">
+                <div class="category-title">🎵 Música</div>
+                <div class="category-items">
+                    <div class="sidebar-item" onclick="showSection(event, 'musica-config')">
+                        <i class="fas fa-music"></i> Configuración
+                    </div>
+                    <div class="sidebar-item" onclick="showSection(event, 'playlists')">
+                        <i class="fas fa-list"></i> Playlists
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sistema -->
+            <div class="sidebar-category">
+                <div class="category-title">⚙️ Sistema</div>
+                <div class="category-items">
+                    <div class="sidebar-item" onclick="showSection(event, 'general')">
+                        <i class="fas fa-cog"></i> General
+                    </div>
+                    <div class="sidebar-item" onclick="showSection(event, 'estadisticas')">
+                        <i class="fas fa-chart-bar"></i> Estadísticas
+                    </div>
+                    <div class="sidebar-item" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="dashboard-main-content">
+            <!-- Bienvenidas -->
+            <div id="bienvenidas" class="content-section active">
+                <div class="section-header">
+                    <h2><i class="fas fa-door-open"></i> Mensajes de Bienvenida</h2>
+                </div>
+                <div class="config-grid">
+                    <div class="config-card">
+                        <h3><i class="fas fa-toggle-on"></i> Habilitar Bienvenidas</h3>
+                        <div class="toggle-switch">
+                            <label>Activado</label>
+                            <label class="switch">
+                                <input type="checkbox" id="welcomeEnabled" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="config-card">
+                        <h3><i class="fas fa-hashtag"></i> Canal de Bienvenida</h3>
+                        <div class="config-field">
+                            <label>Selecciona el canal</label>
+                            <select>
+                                <option>general</option>
+                                <option>bienvenidos</option>
+                                <option>logs</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="config-card">
+                        <h3><i class="fas fa-message"></i> Mensaje Personalizado</h3>
+                        <div class="config-field">
+                            <label>Mensaje</label>
+                            <textarea style="resize: vertical; min-height: 100px;" placeholder="Bienvenido {user}"></textarea>
+                        </div>
+                        <div class="button-group">
+                            <button class="btn btn-primary">Guardar</button>
+                            <button class="btn btn-secondary">Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Despedidas -->
+            <div id="despedidas" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-door-closed"></i> Mensajes de Despedida</h2>
+                </div>
+                <div class="config-grid">
+                    <div class="config-card">
+                        <h3><i class="fas fa-toggle-on"></i> Habilitar Despedidas</h3>
+                        <div class="toggle-switch">
+                            <label>Activado</label>
+                            <label class="switch">
+                                <input type="checkbox">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="config-card">
+                        <h3><i class="fas fa-hashtag"></i> Canal de Despedida</h3>
+                        <div class="config-field">
+                            <label>Selecciona el canal</label>
+                            <select>
+                                <option>general</option>
+                                <option>despedidas</option>
+                                <option>logs</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="config-card">
+                        <h3><i class="fas fa-message"></i> Mensaje Personalizado</h3>
+                        <div class="config-field">
+                            <label>Mensaje</label>
+                            <textarea style="resize: vertical; min-height: 100px;" placeholder="{user} nos ha abandonado :("></textarea>
+                        </div>
+                        <div class="button-group">
+                            <button class="btn btn-primary">Guardar</button>
+                            <button class="btn btn-secondary">Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Invite Tracker -->
+            <div id="invite-tracker" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-users"></i> Invite Tracker</h2>
+                </div>
+                <div class="config-grid">
+                    <div class="config-card">
+                        <h3><i class="fas fa-toggle-on"></i> Habilitar Tracking</h3>
+                        <div class="toggle-switch">
+                            <label>Activado</label>
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="config-card">
+                        <h3><i class="fas fa-info-circle"></i> Información</h3>
+                        <p style="color: #b5bac1; margin: 0;">Rastrear quién invita a nuevos usuarios al servidor. Se guardará un registro de todas las invitaciones.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AutoMod -->
+            <div id="automod" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-shield-alt"></i> Moderación Automática</h2>
+                </div>
+                <div class="config-grid">
+                    <div class="config-card">
+                        <h3><i class="fas fa-words"></i> Filtro de Palabras</h3>
+                        <div class="toggle-switch">
+                            <label>Activado</label>
+                            <label class="switch">
+                                <input type="checkbox">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="config-card">
+                        <h3><i class="fas fa-spam"></i> Anti-Spam</h3>
+                        <div class="toggle-switch">
+                            <label>Activado</label>
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="config-card">
+                        <h3><i class="fas fa-link"></i> Anti-Raid</h3>
+                        <div class="toggle-switch">
+                            <label>Activado</label>
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logs -->
+            <div id="logs" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-book"></i> Logs de Moderación</h2>
+                </div>
+                <div class="config-grid">
+                    <div class="config-card">
+                        <h3><i class="fas fa-hashtag"></i> Canal de Logs</h3>
+                        <div class="config-field">
+                            <label>Selecciona el canal</label>
+                            <select>
+                                <option>mod-logs</option>
+                                <option>general</option>
+                                <option>admin</option>
+                            </select>
+                        </div>
+                        <div class="button-group">
+                            <button class="btn btn-primary">Guardar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Infracciones -->
+            <div id="infracciones" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-gavel"></i> Sistema de Infracciones</h2>
+                </div>
+                <div class="config-grid">
+                    <div class="config-card">
+                        <h3><i class="fas fa-toggle-on"></i> Sistema Activo</h3>
+                        <div class="toggle-switch">
+                            <label>Activado</label>
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Música Config -->
+            <div id="musica-config" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-music"></i> Configuración de Música</h2>
+                </div>
+                <div class="config-grid">
+                    <div class="config-card">
+                        <h3><i class="fas fa-toggle-on"></i> Música Habilitada</h3>
+                        <div class="toggle-switch">
+                            <label>Activada</label>
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Playlists -->
+            <div id="playlists" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-list"></i> Playlists</h2>
+                </div>
+                <div class="config-grid">
+                    <div class="config-card">
+                        <h3><i class="fas fa-info-circle"></i> Playlists Disponibles</h3>
+                        <p style="color: #b5bac1; margin: 0;">Aquí aparecerán las playlists guardadas.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- General -->
+            <div id="general" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-cog"></i> Configuración General</h2>
+                </div>
+                <div class="config-grid">
+                    <div class="config-card">
+                        <h3><i class="fas fa-tag"></i> Prefijo del Bot</h3>
+                        <div class="config-field">
+                            <label>Prefijo</label>
+                            <input type="text" value="!" placeholder="!">
+                        </div>
+                        <div class="button-group">
+                            <button class="btn btn-primary">Guardar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estadísticas -->
+            <div id="estadisticas" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-chart-bar"></i> Estadísticas</h2>
+                </div>
+                <div class="config-grid">
+                    <div class="config-card">
+                        <h3><i class="fas fa-users"></i> Miembros</h3>
+                        <p style="color: #5865f2; font-size: 24px; font-weight: bold; margin: 10px 0;">-</p>
+                        <p style="color: #b5bac1; margin: 0;">Cargando...</p>
+                    </div>
+                    <div class="config-card">
+                        <h3><i class="fas fa-message"></i> Mensajes (hoy)</h3>
+                        <p style="color: #5865f2; font-size: 24px; font-weight: bold; margin: 10px 0;">-</p>
+                        <p style="color: #b5bac1; margin: 0;">Cargando...</p>
+                    </div>
+                    <div class="config-card">
+                        <h3><i class="fas fa-shield-alt"></i> Acciones de Mod</h3>
+                        <p style="color: #5865f2; font-size: 24px; font-weight: bold; margin: 10px 0;">-</p>
+                        <p style="color: #b5bac1; margin: 0;">Cargando...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     
     <script src="./dashboard.js"></script>
+    <script>
+        function showSection(event, sectionId) {
+            event.preventDefault();
+            
+            // Ocultar todas las secciones
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Ocultar todos los items de sidebar
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Mostrar la sección seleccionada
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.classList.add('active');
+            }
+            
+            // Marcar el item como activo
+            event.target.closest('.sidebar-item').classList.add('active');
+        }
+    </script>
 </body>
 </html>
