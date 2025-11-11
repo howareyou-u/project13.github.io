@@ -56,9 +56,12 @@ module.exports = async (req, res) => {
 
     console.log('Token obtained successfully');
 
-    // Redirigir al dashboard con token (sin pasar usuario/guildos en URL para evitar URI_TOO_LONG)
-    // El frontend hará una petición adicional para obtener estos datos
-    const frontend = process.env.FRONTEND_URI || 'https://project13-api.vercel.app';
+    // Redirigir al dashboard con token
+    let frontend = process.env.FRONTEND_URI || 'https://project13-api.vercel.app';
+    
+    // Limpiar FRONTEND_URI de caracteres no deseados
+    frontend = frontend.replace(/\/$/, '').replace(/\.$/, '').trim();
+    
     const redirectUrl = `${frontend}/dashboard.html?token=${encodeURIComponent(tokenData.access_token)}`;
 
     // Establecer cookies sin HttpOnly para que puedan ser leídas desde JavaScript
