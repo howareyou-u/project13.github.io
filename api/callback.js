@@ -1,12 +1,22 @@
 // Vercel Serverless function: exchanges Discord OAuth2 code for tokens and redirects to the frontend
-const fetch = global.fetch || require('node-fetch');
 
 module.exports = async (req, res) => {
   try {
     const code = req.query.code || (req.body && req.body.code);
 
+    console.log('=== Callback Debug ===');
+    console.log('Code:', code);
+    console.log('CLIENT_ID:', process.env.CLIENT_ID);
+    console.log('CLIENT_SECRET:', process.env.CLIENT_SECRET ? 'SET' : 'NOT SET');
+    console.log('REDIRECT_URI:', process.env.REDIRECT_URI);
+    console.log('FRONTEND_URI:', process.env.FRONTEND_URI);
+
     if (!code) {
       return res.status(400).send('No code provided');
+    }
+
+    if (!process.env.CLIENT_ID || !process.env.CLIENT_SECRET) {
+      return res.status(500).json({ error: 'Missing environment variables' });
     }
 
     const tokenResponse = await fetch('https://discord.com/api/oauth2/token', {
@@ -17,7 +27,7 @@ module.exports = async (req, res) => {
         grant_type: 'authorization_code',
         code: code,
         redirect_uri: process.env.REDIRECT_URI
-      }),
+      }).toString(),
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       }
@@ -25,9 +35,12 @@ module.exports = async (req, res) => {
 
     const tokenData = await tokenResponse.json();
 
+    console.log('Token Response Status:', tokenResponse.status);
+    console.log('Token Data:', tokenData);
+
     if (tokenData.error) {
       console.error('Token error', tokenData);
-      return res.status(500).json({ error: 'Token exchange failed' });
+      return res.status(500).json({ error: 'Token exchange failed', details: tokenData });
     }
 
     // Get user info
@@ -39,6 +52,8 @@ module.exports = async (req, res) => {
 
     const userData = await userResp.json();
 
+    console.log('User Data:', userData);
+
     // Get guilds
     const guildsResp = await fetch('https://discord.com/api/users/@me/guilds', {
       headers: {
@@ -48,14 +63,19 @@ module.exports = async (req, res) => {
 
     const guildsData = await guildsResp.json();
 
+    console.log('Guilds Data:', guildsData);
+
     // Redirect back to frontend carrying token and user info
     const frontend = process.env.FRONTEND_URI || 'https://project13-api.vercel.app';
     const redirectUrl = `${frontend}/dashboard.html?token=${encodeURIComponent(tokenData.access_token)}&user=${encodeURIComponent(JSON.stringify(userData))}&guilds=${encodeURIComponent(JSON.stringify(guildsData))}`;
+
+    console.log('Redirecting to:', redirectUrl);
 
     return res.writeHead(302, { Location: redirectUrl }).end();
 
   } catch (err) {
     console.error('Callback error:', err);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error', message: err.message });
   }
 };
+
