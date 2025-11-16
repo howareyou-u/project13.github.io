@@ -2,21 +2,72 @@
 let currentToken = null;
 let currentGuild = null;
 let currentConfig = null;
+let currentChannels = [];
+let allGuilds = [];
+
+// Definición de módulos disponibles
+const modules = [
+    {
+        id: 'welcome',
+        icon: 'fa-hand-wave',
+        title: 'Bienvenidas',
+        description: 'Saluda a los nuevos miembros con mensajes personalizables y roles automáticos.',
+        category: 'Mensajes'
+    },
+    {
+        id: 'farewell',
+        icon: 'fa-door-open',
+        title: 'Despedidas',
+        description: 'Envía mensajes cuando los miembros abandonan el servidor.',
+        category: 'Mensajes'
+    },
+    {
+        id: 'invite-tracker',
+        icon: 'fa-users',
+        title: 'Invite Tracker',
+        description: 'Rastrea quién invita a nuevos usuarios al servidor.',
+        category: 'Mensajes'
+    },
+    {
+        id: 'automod',
+        icon: 'fa-shield-alt',
+        title: 'AutoMod',
+        description: 'Mantén tu servidor seguro con herramientas de moderación automática.',
+        category: 'Moderación'
+    },
+    {
+        id: 'logs',
+        icon: 'fa-clipboard-list',
+        title: 'Logs',
+        description: 'Registra y rastrea automáticamente eventos del servidor para referencia fácil.',
+        category: 'Moderación'
+    },
+    {
+        id: 'infractions',
+        icon: 'fa-gavel',
+        title: 'Infracciones',
+        description: 'Sistema de infracciones para gestionar advertencias y sanciones.',
+        category: 'Moderación'
+    },
+    {
+        id: 'music',
+        icon: 'fa-music',
+        title: 'Música',
+        description: 'Escucha música de alta calidad con tus amigos en el chat de voz.',
+        category: 'Música'
+    },
+    {
+        id: 'general',
+        icon: 'fa-cog',
+        title: 'General',
+        description: 'Configuración general del bot como prefijo y opciones básicas.',
+        category: 'Sistema'
+    }
+];
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Comprobar si el usuario está autenticado
     checkAuth();
-
-    // Manejar el cierre de sesión
-    const logoutBtn = document.getElementById('logout-button');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            logout();
-        });
-    }
-
-    // Cargar guilds después de autenticar
+    
     setTimeout(() => {
         if (currentToken) {
             loadGuilds();
@@ -42,21 +93,16 @@ function getUrlParam(param) {
 }
 
 function checkAuth() {
-    // Intentar obtener token de URL, cookies o localStorage (en ese orden)
     let token = getUrlParam('token') || getCookie('discord_token') || localStorage.getItem('discord_token');
     
     if (!token) {
-        console.log('No token found, redirecting to login');
         window.location.href = './login.html';
         return;
     }
 
     currentToken = token;
-
-    // Guardar token en localStorage para acceso futuro
     localStorage.setItem('discord_token', token);
 
-    // Intentar obtener userData de cookies o localStorage
     let userData = getCookie('discord_user') || localStorage.getItem('discord_user');
     
     if (userData) {
@@ -65,17 +111,13 @@ function checkAuth() {
             localStorage.setItem('discord_user', JSON.stringify(userData));
             displayUserData(userData);
         } catch (e) {
-            console.error('Error parsing user data:', e);
             loadUserData(token);
         }
     } else {
-        // Si no tenemos userData, cargarla desde la API de Discord
         loadUserData(token);
     }
 
-    // Limpiar URL para evitar que el token quede visible y asegurar que la URL es correcta
     if (token === getUrlParam('token')) {
-        // Usar replaceState para no tener el token en el historial
         const cleanUrl = window.location.origin + '/dashboard.html';
         window.history.replaceState({}, document.title, cleanUrl);
     }
@@ -83,32 +125,30 @@ function checkAuth() {
 
 function displayUserData(userData) {
     if (userData && userData.username) {
-        const usernameEl = document.getElementById('username');
-        const avatarEl = document.getElementById('user-avatar');
+        const usernameNav = document.getElementById('username-nav');
+        const avatarInitials = document.getElementById('user-avatar-initials');
         
-        if (usernameEl) {
-            usernameEl.textContent = userData.username;
+        if (usernameNav) {
+            usernameNav.textContent = userData.username;
         }
         
-        if (avatarEl && userData.id && userData.avatar) {
-            avatarEl.src = `https://cdn.discordapp.com/avatars/${userData.id}/${userData.avatar}.png`;
+        if (avatarInitials) {
+            const initials = userData.username.substring(0, 2).toUpperCase();
+            avatarInitials.textContent = initials;
+            if (userData.avatar) {
+                avatarInitials.style.backgroundImage = `url(https://cdn.discordapp.com/avatars/${userData.id}/${userData.avatar}.png)`;
+                avatarInitials.style.backgroundSize = 'cover';
+                avatarInitials.textContent = '';
+            }
         }
     }
 }
 
 function loadUserData(token) {
-    // Cargar datos del usuario desde Discord API
     fetch('https://discord.com/api/v10/users/@me', {
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
+        headers: { 'Authorization': `Bearer ${token}` }
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Failed to load user data');
-        }
-        return response.json();
-    })
+    .then(response => response.json())
     .then(data => {
         if (data.username) {
             localStorage.setItem('discord_user', JSON.stringify(data));
@@ -131,39 +171,58 @@ async function loadGuilds() {
 
         if (!response.ok || !data.success) {
             console.error('Error loading guilds:', data.error);
+            document.getElementById('servers-grid').innerHTML = '<div class="loading"><p>Error al cargar servidores</p></div>';
             return;
         }
 
-        console.log('Guilds loaded:', data.guilds);
-        displayGuildSelector(data.guilds);
+        allGuilds = data.guilds;
+        displayServers(data.guilds);
 
     } catch (error) {
         console.error('Error loading guilds:', error);
+        document.getElementById('servers-grid').innerHTML = '<div class="loading"><p>Error al cargar servidores</p></div>';
     }
 }
 
-// Mostrar selector de servidores
-function displayGuildSelector(guilds) {
-    // Crear un modal o dropdown para seleccionar servidor
-    let guildHtml = '<select id="guild-select" onchange="loadGuildConfig(this.value)">';
-    guildHtml += '<option value="">Selecciona un servidor...</option>';
+// Mostrar servidores en tarjetas
+function displayServers(guilds) {
+    const serversGrid = document.getElementById('servers-grid');
     
-    guilds.forEach(guild => {
-        guildHtml += `<option value="${guild.id}">${guild.name}</option>`;
-    });
-    
-    guildHtml += '</select>';
-
-    // Insertar en algún lugar visible (puedes ajustar esto)
-    const guildSelector = document.getElementById('guild-selector');
-    if (guildSelector) {
-        guildSelector.innerHTML = guildHtml;
+    if (!guilds || guilds.length === 0) {
+        serversGrid.innerHTML = '<div class="loading"><p>No tienes servidores con permisos de administrador</p></div>';
+        return;
     }
+
+    serversGrid.innerHTML = guilds.map(guild => {
+        const iconUrl = guild.icon 
+            ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=128`
+            : null;
+        
+        const iconDisplay = iconUrl 
+            ? `<img src="${iconUrl}" alt="${guild.name}">`
+            : `<span>${guild.name.substring(0, 2).toUpperCase()}</span>`;
+
+        return `
+            <div class="server-card" onclick="selectGuild('${guild.id}')">
+                <div class="server-icon">
+                    ${iconDisplay}
+                </div>
+                <div class="server-info">
+                    <div class="server-name">
+                        ${guild.name}
+                        <i class="fas fa-crown server-crown"></i>
+                    </div>
+                    <div class="server-id">${guild.id}</div>
+                </div>
+            </div>
+        `;
+    }).join('');
 }
 
-// Cargar configuración de un servidor específico
-async function loadGuildConfig(guildId) {
-    if (!guildId) return;
+// Seleccionar un servidor y mostrar vista de configuración
+async function selectGuild(guildId) {
+    const guild = allGuilds.find(g => g.id === guildId);
+    if (!guild) return;
 
     try {
         const response = await fetch(
@@ -172,155 +231,540 @@ async function loadGuildConfig(guildId) {
         const data = await response.json();
 
         if (!response.ok || !data.success) {
-            console.error('Error loading guild config:', data.error);
+            showNotification('❌ Error al cargar la configuración del servidor', 'error');
             return;
         }
 
         currentGuild = data.guild;
         currentConfig = data.config;
+        currentChannels = data.channels || [];
 
-        console.log('Guild config loaded:', data);
-        populateDashboard(data.config, data.channels);
+        showConfigView();
+        displayModules();
+        displayGuildInfo(data.guild);
 
     } catch (error) {
         console.error('Error loading guild config:', error);
+        showNotification('❌ Error al cargar la configuración', 'error');
     }
 }
 
-// Llenar el dashboard con la configuración actual
-function populateDashboard(config, channels) {
-    // Llenar selects de canales
-    const channelSelects = document.querySelectorAll('select[id$="Channel"]');
-    let channelOptions = '<option value="">Selecciona un canal</option>';
+// Mostrar vista de configuración
+function showConfigView() {
+    document.getElementById('servers-view').style.display = 'none';
+    document.getElementById('config-view').classList.add('active');
+}
+
+// Mostrar vista de servidores
+function showServersView() {
+    document.getElementById('servers-view').style.display = 'block';
+    document.getElementById('config-view').classList.remove('active');
+    currentGuild = null;
+    currentConfig = null;
+}
+
+// Mostrar información del servidor
+function displayGuildInfo(guild) {
+    const iconUrl = guild.icon 
+        ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=128`
+        : null;
     
-    channels?.forEach(channel => {
-        channelOptions += `<option value="${channel.id}">#${channel.name}</option>`;
-    });
+    const iconDisplay = iconUrl 
+        ? `<img src="${iconUrl}" alt="${guild.name}">`
+        : `<span>${guild.name.substring(0, 2).toUpperCase()}</span>`;
 
-    channelSelects.forEach(select => {
-        if (!select.id.includes('guild')) {
-            select.innerHTML = channelOptions;
-        }
-    });
-
-    // Llenar campos de configuración - Bienvenidas
-    if (config.welcome) {
-        const welcomeToggle = document.getElementById('welcomeEnabled');
-        if (welcomeToggle) welcomeToggle.checked = config.welcome.enabled || false;
-        
-        const welcomeChannel = document.getElementById('welcomeChannel');
-        if (welcomeChannel && config.welcome.channel) {
-            welcomeChannel.value = config.welcome.channel;
-        }
-        
-        const welcomeMessage = document.getElementById('welcomeMessage');
-        if (welcomeMessage && config.welcome.message) {
-            welcomeMessage.value = config.welcome.message;
-        }
-    }
-
-    // Llenar campos de configuración - Despedidas
-    if (config.farewell) {
-        const farewellToggle = document.getElementById('farewellEnabled');
-        if (farewellToggle) farewellToggle.checked = config.farewell.enabled || false;
-        
-        const farewellChannel = document.getElementById('farewellChannel');
-        if (farewellChannel && config.farewell.channel) {
-            farewellChannel.value = config.farewell.channel;
-        }
-        
-        const farewellMessage = document.getElementById('farewellMessage');
-        if (farewellMessage && config.farewell.message) {
-            farewellMessage.value = config.farewell.message;
-        }
-    }
-
-    // Llenar campos de configuración - Invite Tracker
-    if (config.inviteTracker) {
-        const inviteTrackerToggle = document.getElementById('inviteTrackerEnabled');
-        if (inviteTrackerToggle) inviteTrackerToggle.checked = config.inviteTracker.enabled !== false;
-    }
-
-    // Llenar campos de configuración - AutoMod
-    if (config.automod) {
-        const wordFilter = document.getElementById('automodWordFilter');
-        if (wordFilter) wordFilter.checked = config.automod.wordFilter || false;
-        
-        const antiSpam = document.getElementById('automodAntiSpam');
-        if (antiSpam) antiSpam.checked = config.automod.antiSpam !== false;
-        
-        const antiRaid = document.getElementById('automodAntiRaid');
-        if (antiRaid) antiRaid.checked = config.automod.antiRaid !== false;
-    }
-
-    // Llenar campos de configuración - Logs
-    if (config.logs) {
-        const logsChannel = document.getElementById('logsChannel');
-        if (logsChannel && config.logs.channel) {
-            logsChannel.value = config.logs.channel;
-        }
-    }
-
-    // Llenar campos de configuración - Infracciones
-    if (config.infractions) {
-        const infractionsToggle = document.getElementById('infractionsEnabled');
-        if (infractionsToggle) infractionsToggle.checked = config.infractions.enabled !== false;
-    }
-
-    // Llenar campos de configuración - Música
-    if (config.music) {
-        const musicToggle = document.getElementById('musicEnabled');
-        if (musicToggle) musicToggle.checked = config.music.enabled !== false;
-    }
-
-    // Llenar campos de configuración - Prefijo
-    if (config.prefix) {
-        const prefixInput = document.getElementById('prefixInput');
-        if (prefixInput) prefixInput.value = config.prefix;
-    }
-
-    console.log('Dashboard populated with config');
+    document.getElementById('guild-icon-large').innerHTML = iconDisplay;
+    document.getElementById('guild-name-large').textContent = guild.name;
+    document.getElementById('guild-id-large').textContent = guild.id;
 }
 
-// Guardar configuración
-async function saveGuildConfig() {
+// Mostrar módulos disponibles
+function displayModules() {
+    const modulesGrid = document.getElementById('modules-grid');
+    const modulePanels = document.getElementById('module-panels');
+
+    // Agrupar módulos por categoría
+    const modulesByCategory = {};
+    modules.forEach(module => {
+        if (!modulesByCategory[module.category]) {
+            modulesByCategory[module.category] = [];
+        }
+        modulesByCategory[module.category].push(module);
+    });
+
+    let html = '';
+    Object.keys(modulesByCategory).forEach(category => {
+        html += `<div style="grid-column: 1 / -1; color: #72767d; font-size: 12px; font-weight: 700; text-transform: uppercase; margin-top: 20px; margin-bottom: 10px;">${category}</div>`;
+        modulesByCategory[category].forEach(module => {
+            html += `
+                <div class="module-card" onclick="showModulePanel('${module.id}')" id="module-${module.id}">
+                    <div class="module-header">
+                        <div>
+                            <div class="module-icon"><i class="fas ${module.icon}"></i></div>
+                            <div class="module-title">${module.title}</div>
+                        </div>
+                        <i class="fas fa-pencil module-edit"></i>
+                    </div>
+                    <div class="module-description">${module.description}</div>
+                </div>
+            `;
+        });
+    });
+
+    modulesGrid.innerHTML = html;
+
+    // Crear paneles de configuración
+    modulePanels.innerHTML = modules.map(module => createModulePanel(module)).join('');
+}
+
+// Crear panel de configuración para un módulo
+function createModulePanel(module) {
+    const panelId = `panel-${module.id}`;
+    
+    switch(module.id) {
+        case 'welcome':
+            return createWelcomePanel(panelId);
+        case 'farewell':
+            return createFarewellPanel(panelId);
+        case 'invite-tracker':
+            return createInviteTrackerPanel(panelId);
+        case 'automod':
+            return createAutoModPanel(panelId);
+        case 'logs':
+            return createLogsPanel(panelId);
+        case 'infractions':
+            return createInfractionsPanel(panelId);
+        case 'music':
+            return createMusicPanel(panelId);
+        case 'general':
+            return createGeneralPanel(panelId);
+        default:
+            return `<div class="module-panel" id="${panelId}"><p>Panel no disponible</p></div>`;
+    }
+}
+
+// Paneles de configuración
+function createWelcomePanel(panelId) {
+    const channelOptions = currentChannels.map(ch => 
+        `<option value="${ch.id}">#${ch.name}</option>`
+    ).join('');
+
+    return `
+        <div class="module-panel" id="${panelId}">
+            <div class="panel-header">
+                <h3><i class="fas fa-hand-wave"></i> Configuración de Bienvenidas</h3>
+            </div>
+            <div class="config-grid">
+                <div class="config-card">
+                    <h4><i class="fas fa-toggle-on"></i> Habilitar Bienvenidas</h4>
+                    <div class="toggle-switch">
+                        <label>Activado</label>
+                        <label class="switch">
+                            <input type="checkbox" id="welcomeEnabled">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="config-card">
+                    <h4><i class="fas fa-hashtag"></i> Canal de Bienvenida</h4>
+                    <div class="config-field">
+                        <label>Selecciona el canal</label>
+                        <select id="welcomeChannel">
+                            <option value="">Selecciona un canal</option>
+                            ${channelOptions}
+                        </select>
+                    </div>
+                </div>
+                <div class="config-card" style="grid-column: 1 / -1;">
+                    <h4><i class="fas fa-message"></i> Mensaje Personalizado</h4>
+                    <div class="config-field">
+                        <label>Mensaje</label>
+                        <textarea id="welcomeMessage" rows="4" placeholder="Bienvenido {user} al servidor!"></textarea>
+                    </div>
+                    <div class="button-group">
+                        <button class="btn btn-primary" onclick="saveModuleConfig('welcome')">Guardar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function createFarewellPanel(panelId) {
+    const channelOptions = currentChannels.map(ch => 
+        `<option value="${ch.id}">#${ch.name}</option>`
+    ).join('');
+
+    return `
+        <div class="module-panel" id="${panelId}">
+            <div class="panel-header">
+                <h3><i class="fas fa-door-open"></i> Configuración de Despedidas</h3>
+            </div>
+            <div class="config-grid">
+                <div class="config-card">
+                    <h4><i class="fas fa-toggle-on"></i> Habilitar Despedidas</h4>
+                    <div class="toggle-switch">
+                        <label>Activado</label>
+                        <label class="switch">
+                            <input type="checkbox" id="farewellEnabled">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="config-card">
+                    <h4><i class="fas fa-hashtag"></i> Canal de Despedida</h4>
+                    <div class="config-field">
+                        <label>Selecciona el canal</label>
+                        <select id="farewellChannel">
+                            <option value="">Selecciona un canal</option>
+                            ${channelOptions}
+                        </select>
+                    </div>
+                </div>
+                <div class="config-card" style="grid-column: 1 / -1;">
+                    <h4><i class="fas fa-message"></i> Mensaje Personalizado</h4>
+                    <div class="config-field">
+                        <label>Mensaje</label>
+                        <textarea id="farewellMessage" rows="4" placeholder="{user} nos ha abandonado :("></textarea>
+                    </div>
+                    <div class="button-group">
+                        <button class="btn btn-primary" onclick="saveModuleConfig('farewell')">Guardar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function createInviteTrackerPanel(panelId) {
+    return `
+        <div class="module-panel" id="${panelId}">
+            <div class="panel-header">
+                <h3><i class="fas fa-users"></i> Invite Tracker</h3>
+            </div>
+            <div class="config-grid">
+                <div class="config-card">
+                    <h4><i class="fas fa-toggle-on"></i> Habilitar Tracking</h4>
+                    <div class="toggle-switch">
+                        <label>Activado</label>
+                        <label class="switch">
+                            <input type="checkbox" id="inviteTrackerEnabled">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="button-group" style="margin-top: 15px;">
+                        <button class="btn btn-primary" onclick="saveModuleConfig('invite-tracker')">Guardar</button>
+                    </div>
+                </div>
+                <div class="config-card">
+                    <h4><i class="fas fa-info-circle"></i> Información</h4>
+                    <p style="color: #b5bac1; margin: 0;">Rastrear quién invita a nuevos usuarios al servidor. Se guardará un registro de todas las invitaciones.</p>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function createAutoModPanel(panelId) {
+    return `
+        <div class="module-panel" id="${panelId}">
+            <div class="panel-header">
+                <h3><i class="fas fa-shield-alt"></i> Moderación Automática</h3>
+            </div>
+            <div class="config-grid">
+                <div class="config-card">
+                    <h4><i class="fas fa-words"></i> Filtro de Palabras</h4>
+                    <div class="toggle-switch">
+                        <label>Activado</label>
+                        <label class="switch">
+                            <input type="checkbox" id="automodWordFilter">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="config-card">
+                    <h4><i class="fas fa-spam"></i> Anti-Spam</h4>
+                    <div class="toggle-switch">
+                        <label>Activado</label>
+                        <label class="switch">
+                            <input type="checkbox" id="automodAntiSpam">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="config-card">
+                    <h4><i class="fas fa-link"></i> Anti-Raid</h4>
+                    <div class="toggle-switch">
+                        <label>Activado</label>
+                        <label class="switch">
+                            <input type="checkbox" id="automodAntiRaid">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="config-card" style="grid-column: 1 / -1;">
+                    <div class="button-group">
+                        <button class="btn btn-primary" onclick="saveModuleConfig('automod')">Guardar Configuración</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function createLogsPanel(panelId) {
+    const channelOptions = currentChannels.map(ch => 
+        `<option value="${ch.id}">#${ch.name}</option>`
+    ).join('');
+
+    return `
+        <div class="module-panel" id="${panelId}">
+            <div class="panel-header">
+                <h3><i class="fas fa-clipboard-list"></i> Logs de Moderación</h3>
+            </div>
+            <div class="config-grid">
+                <div class="config-card">
+                    <h4><i class="fas fa-hashtag"></i> Canal de Logs</h4>
+                    <div class="config-field">
+                        <label>Selecciona el canal</label>
+                        <select id="logsChannel">
+                            <option value="">Selecciona un canal</option>
+                            ${channelOptions}
+                        </select>
+                    </div>
+                    <div class="button-group" style="margin-top: 15px;">
+                        <button class="btn btn-primary" onclick="saveModuleConfig('logs')">Guardar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function createInfractionsPanel(panelId) {
+    return `
+        <div class="module-panel" id="${panelId}">
+            <div class="panel-header">
+                <h3><i class="fas fa-gavel"></i> Sistema de Infracciones</h3>
+            </div>
+            <div class="config-grid">
+                <div class="config-card">
+                    <h4><i class="fas fa-toggle-on"></i> Sistema Activo</h4>
+                    <div class="toggle-switch">
+                        <label>Activado</label>
+                        <label class="switch">
+                            <input type="checkbox" id="infractionsEnabled">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="button-group" style="margin-top: 15px;">
+                        <button class="btn btn-primary" onclick="saveModuleConfig('infractions')">Guardar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function createMusicPanel(panelId) {
+    return `
+        <div class="module-panel" id="${panelId}">
+            <div class="panel-header">
+                <h3><i class="fas fa-music"></i> Configuración de Música</h3>
+            </div>
+            <div class="config-grid">
+                <div class="config-card">
+                    <h4><i class="fas fa-toggle-on"></i> Música Habilitada</h4>
+                    <div class="toggle-switch">
+                        <label>Activada</label>
+                        <label class="switch">
+                            <input type="checkbox" id="musicEnabled">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="button-group" style="margin-top: 15px;">
+                        <button class="btn btn-primary" onclick="saveModuleConfig('music')">Guardar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function createGeneralPanel(panelId) {
+    return `
+        <div class="module-panel" id="${panelId}">
+            <div class="panel-header">
+                <h3><i class="fas fa-cog"></i> Configuración General</h3>
+            </div>
+            <div class="config-grid">
+                <div class="config-card">
+                    <h4><i class="fas fa-tag"></i> Prefijo del Bot</h4>
+                    <div class="config-field">
+                        <label>Prefijo</label>
+                        <input type="text" id="prefixInput" value="!" placeholder="!">
+                    </div>
+                    <div class="button-group" style="margin-top: 15px;">
+                        <button class="btn btn-primary" onclick="saveModuleConfig('general')">Guardar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Mostrar panel de módulo
+function showModulePanel(moduleId) {
+    // Ocultar todos los paneles
+    document.querySelectorAll('.module-panel').forEach(panel => {
+        panel.classList.remove('active');
+    });
+
+    // Desactivar todas las tarjetas
+    document.querySelectorAll('.module-card').forEach(card => {
+        card.classList.remove('active');
+    });
+
+    // Mostrar el panel seleccionado
+    const panel = document.getElementById(`panel-${moduleId}`);
+    if (panel) {
+        panel.classList.add('active');
+        document.getElementById(`module-${moduleId}`).classList.add('active');
+        
+        // Scroll al panel
+        panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
+        // Cargar valores actuales
+        loadModuleValues(moduleId);
+    }
+}
+
+// Cargar valores del módulo
+function loadModuleValues(moduleId) {
+    if (!currentConfig) return;
+
+    switch(moduleId) {
+        case 'welcome':
+            if (currentConfig.welcome) {
+                const enabled = document.getElementById('welcomeEnabled');
+                const channel = document.getElementById('welcomeChannel');
+                const message = document.getElementById('welcomeMessage');
+                if (enabled) enabled.checked = currentConfig.welcome.enabled || false;
+                if (channel && currentConfig.welcome.channel) channel.value = currentConfig.welcome.channel;
+                if (message && currentConfig.welcome.message) message.value = currentConfig.welcome.message;
+            }
+            break;
+        case 'farewell':
+            if (currentConfig.farewell) {
+                const enabled = document.getElementById('farewellEnabled');
+                const channel = document.getElementById('farewellChannel');
+                const message = document.getElementById('farewellMessage');
+                if (enabled) enabled.checked = currentConfig.farewell.enabled || false;
+                if (channel && currentConfig.farewell.channel) channel.value = currentConfig.farewell.channel;
+                if (message && currentConfig.farewell.message) message.value = currentConfig.farewell.message;
+            }
+            break;
+        case 'invite-tracker':
+            if (currentConfig.inviteTracker) {
+                const enabled = document.getElementById('inviteTrackerEnabled');
+                if (enabled) enabled.checked = currentConfig.inviteTracker.enabled !== false;
+            }
+            break;
+        case 'automod':
+            if (currentConfig.automod) {
+                const wordFilter = document.getElementById('automodWordFilter');
+                const antiSpam = document.getElementById('automodAntiSpam');
+                const antiRaid = document.getElementById('automodAntiRaid');
+                if (wordFilter) wordFilter.checked = currentConfig.automod.wordFilter || false;
+                if (antiSpam) antiSpam.checked = currentConfig.automod.antiSpam !== false;
+                if (antiRaid) antiRaid.checked = currentConfig.automod.antiRaid !== false;
+            }
+            break;
+        case 'logs':
+            if (currentConfig.logs) {
+                const channel = document.getElementById('logsChannel');
+                if (channel && currentConfig.logs.channel) channel.value = currentConfig.logs.channel;
+            }
+            break;
+        case 'infractions':
+            if (currentConfig.infractions) {
+                const enabled = document.getElementById('infractionsEnabled');
+                if (enabled) enabled.checked = currentConfig.infractions.enabled !== false;
+            }
+            break;
+        case 'music':
+            if (currentConfig.music) {
+                const enabled = document.getElementById('musicEnabled');
+                if (enabled) enabled.checked = currentConfig.music.enabled !== false;
+            }
+            break;
+        case 'general':
+            if (currentConfig.prefix) {
+                const prefix = document.getElementById('prefixInput');
+                if (prefix) prefix.value = currentConfig.prefix;
+            }
+            break;
+    }
+}
+
+// Guardar configuración de un módulo
+async function saveModuleConfig(moduleId) {
     if (!currentGuild) {
-        alert('Por favor selecciona un servidor primero');
+        showNotification('❌ No hay servidor seleccionado', 'error');
         return;
     }
 
-    // Recopilar configuración actual del formulario
-    const config = {
-        welcome: {
-            enabled: document.getElementById('welcomeEnabled')?.checked || false,
-            channel: document.getElementById('welcomeChannel')?.value || null,
-            message: document.getElementById('welcomeMessage')?.value || 'Bienvenido {user} al servidor!'
-        },
-        farewell: {
-            enabled: document.getElementById('farewellEnabled')?.checked || false,
-            channel: document.getElementById('farewellChannel')?.value || null,
-            message: document.getElementById('farewellMessage')?.value || '{user} nos ha abandonado :('
-        },
-        inviteTracker: {
-            enabled: document.getElementById('inviteTrackerEnabled')?.checked !== false
-        },
-        automod: {
-            enabled: true,
-            wordFilter: document.getElementById('automodWordFilter')?.checked || false,
-            antiSpam: document.getElementById('automodAntiSpam')?.checked !== false,
-            antiRaid: document.getElementById('automodAntiRaid')?.checked !== false
-        },
-        logs: {
-            channel: document.getElementById('logsChannel')?.value || null
-        },
-        infractions: {
-            enabled: document.getElementById('infractionsEnabled')?.checked !== false
-        },
-        music: {
-            enabled: document.getElementById('musicEnabled')?.checked !== false
-        },
-        prefix: document.getElementById('prefixInput')?.value || '!'
-    };
+    // Obtener configuración actual o crear nueva
+    const config = currentConfig || {};
+
+    // Actualizar según el módulo
+    switch(moduleId) {
+        case 'welcome':
+            config.welcome = {
+                enabled: document.getElementById('welcomeEnabled')?.checked || false,
+                channel: document.getElementById('welcomeChannel')?.value || null,
+                message: document.getElementById('welcomeMessage')?.value || 'Bienvenido {user} al servidor!'
+            };
+            break;
+        case 'farewell':
+            config.farewell = {
+                enabled: document.getElementById('farewellEnabled')?.checked || false,
+                channel: document.getElementById('farewellChannel')?.value || null,
+                message: document.getElementById('farewellMessage')?.value || '{user} nos ha abandonado :('
+            };
+            break;
+        case 'invite-tracker':
+            config.inviteTracker = {
+                enabled: document.getElementById('inviteTrackerEnabled')?.checked !== false
+            };
+            break;
+        case 'automod':
+            config.automod = {
+                enabled: true,
+                wordFilter: document.getElementById('automodWordFilter')?.checked || false,
+                antiSpam: document.getElementById('automodAntiSpam')?.checked !== false,
+                antiRaid: document.getElementById('automodAntiRaid')?.checked !== false
+            };
+            break;
+        case 'logs':
+            config.logs = {
+                channel: document.getElementById('logsChannel')?.value || null
+            };
+            break;
+        case 'infractions':
+            config.infractions = {
+                enabled: document.getElementById('infractionsEnabled')?.checked !== false
+            };
+            break;
+        case 'music':
+            config.music = {
+                enabled: document.getElementById('musicEnabled')?.checked !== false
+            };
+            break;
+        case 'general':
+            config.prefix = document.getElementById('prefixInput')?.value || '!';
+            break;
+    }
 
     try {
         const response = await fetch('/api/save-config', {
@@ -338,9 +782,8 @@ async function saveGuildConfig() {
         const data = await response.json();
 
         if (response.ok && data.success) {
-            // Mostrar notificación de éxito
-            showNotification('✅ Configuración guardada correctamente', 'success');
             currentConfig = config;
+            showNotification('✅ Configuración guardada correctamente', 'success');
         } else {
             showNotification('❌ Error al guardar: ' + (data.error || 'Error desconocido'), 'error');
         }
@@ -353,7 +796,6 @@ async function saveGuildConfig() {
 
 // Función para mostrar notificaciones
 function showNotification(message, type = 'success') {
-    // Crear elemento de notificación
     const notification = document.createElement('div');
     notification.style.cssText = `
         position: fixed;
@@ -370,7 +812,6 @@ function showNotification(message, type = 'success') {
     `;
     notification.textContent = message;
     
-    // Agregar animación
     const style = document.createElement('style');
     style.textContent = `
         @keyframes slideIn {
@@ -388,33 +829,26 @@ function showNotification(message, type = 'success') {
     
     document.body.appendChild(notification);
     
-    // Remover después de 3 segundos
     setTimeout(() => {
         notification.style.animation = 'slideIn 0.3s ease reverse';
         setTimeout(() => {
-            document.body.removeChild(notification);
-            document.head.removeChild(style);
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
+            if (document.head.contains(style)) {
+                document.head.removeChild(style);
+            }
         }, 300);
     }, 3000);
 }
 
 function logout() {
-    // Limpiar cookies
     document.cookie = 'discord_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
     document.cookie = 'discord_user=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-    document.cookie = 'discord_guilds=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-    
-    // Limpiar localStorage
     localStorage.removeItem('discord_token');
     localStorage.removeItem('discord_user');
-    localStorage.removeItem('discord_guilds');
-    
-    // Limpiar variables globales
     currentToken = null;
     currentGuild = null;
     currentConfig = null;
-    
-    // Redirigir a login
     window.location.href = './login.html';
 }
-

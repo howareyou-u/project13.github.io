@@ -4,135 +4,409 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Bot Discord</title>
-    <link rel="stylesheet" href="./styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        .dashboard-sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 250px;
-            height: 100vh;
-            background: #2f3136;
-            padding: 20px;
-            overflow-y: auto;
-            border-right: 1px solid #202225;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        .dashboard-main-content {
-            margin-left: 250px;
-            padding: 20px;
-            min-height: 100vh;
-            background: #36393f;
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a0c;
+            color: #fff;
+            overflow-x: hidden;
         }
 
-        .sidebar-category {
-            margin-bottom: 20px;
-        }
-
-        .category-title {
-            color: #72767d;
-            font-size: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-            padding: 0 10px;
-            margin-bottom: 8px;
-            letter-spacing: 0.5px;
-        }
-
-        .category-items {
+        /* Top Navigation Bar */
+        .top-nav {
+            background: #1a1a1c;
+            border-bottom: 1px solid #2a2a2c;
+            padding: 15px 30px;
             display: flex;
-            flex-direction: column;
-            gap: 0;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
 
-        .sidebar-item {
-            color: #b5bac1;
-            padding: 10px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.2s ease;
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .nav-logo {
             display: flex;
             align-items: center;
             gap: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .nav-logo i {
+            color: #5865f2;
+            font-size: 24px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 25px;
+        }
+
+        .nav-link {
+            color: #b5bac1;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+            cursor: pointer;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: #fff;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-icon {
+            color: #b5bac1;
+            font-size: 18px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .nav-icon:hover {
+            color: #fff;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .user-menu:hover {
+            background: #2a2a2c;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #5865f2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
             font-size: 14px;
         }
 
-        .sidebar-item:hover {
-            background: #3f4147;
-            color: #fff;
+        .user-name {
+            font-size: 14px;
+            font-weight: 500;
         }
 
-        .sidebar-item.active {
-            background: #5865f2;
-            color: #fff;
+        /* Main Container */
+        .main-container {
+            min-height: calc(100vh - 60px);
+            padding: 40px;
         }
 
-        .sidebar-item i {
-            width: 20px;
-            text-align: center;
+        /* Server Selection View */
+        .servers-view {
+            max-width: 1400px;
+            margin: 0 auto;
         }
 
-        .content-section {
+        .view-title {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .view-subtitle {
+            color: #b5bac1;
+            font-size: 16px;
+            margin-bottom: 40px;
+        }
+
+        .servers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .server-card {
+            background: #1a1a1c;
+            border: 1px solid #2a2a2c;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .server-card:hover {
+            background: #222224;
+            border-color: #5865f2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(88, 101, 242, 0.2);
+        }
+
+        .server-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 12px;
+            background: #2a2a2c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: bold;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .server-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .server-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .server-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .server-id {
+            font-size: 12px;
+            color: #72767d;
+            font-family: 'Courier New', monospace;
+        }
+
+        .server-crown {
+            color: #faa61a;
+            font-size: 18px;
+        }
+
+        /* Configuration View */
+        .config-view {
             display: none;
-            animation: fadeIn 0.3s ease;
+            max-width: 1400px;
+            margin: 0 auto;
         }
 
-        .content-section.active {
+        .config-view.active {
             display: block;
         }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .config-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #2a2a2c;
         }
 
-        .section-header {
+        .back-button {
+            background: #2a2a2c;
+            border: none;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .back-button:hover {
+            background: #3a3a3c;
+        }
+
+        .guild-banner {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .guild-icon-large {
+            width: 80px;
+            height: 80px;
+            border-radius: 16px;
+            background: #2a2a2c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            font-weight: bold;
+            overflow: hidden;
+        }
+
+        .guild-icon-large img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .guild-info-large h2 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .guild-info-large .guild-id {
+            font-size: 14px;
+            color: #72767d;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Modules Grid */
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .module-card {
+            background: #1a1a1c;
+            border: 1px solid #2a2a2c;
+            border-radius: 12px;
+            padding: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .module-card:hover {
+            background: #222224;
+            border-color: #5865f2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(88, 101, 242, 0.2);
+        }
+
+        .module-card.active {
+            border-color: #faa61a;
+            box-shadow: 0 0 0 2px rgba(250, 166, 26, 0.2);
+        }
+
+        .module-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .module-icon {
+            font-size: 32px;
+            color: #5865f2;
+            margin-bottom: 12px;
+        }
+
+        .module-edit {
+            color: #72767d;
+            font-size: 16px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .module-card:hover .module-edit {
+            opacity: 1;
+        }
+
+        .module-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .module-description {
+            font-size: 14px;
+            color: #b5bac1;
+            line-height: 1.5;
+        }
+
+        /* Module Configuration Panel */
+        .module-panel {
+            display: none;
+            background: #1a1a1c;
+            border: 1px solid #2a2a2c;
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 30px;
+        }
+
+        .module-panel.active {
+            display: block;
+        }
+
+        .panel-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 30px;
-            border-bottom: 2px solid #202225;
             padding-bottom: 20px;
+            border-bottom: 1px solid #2a2a2c;
         }
 
-        .section-header h2 {
-            color: #fff;
+        .panel-header h3 {
             font-size: 24px;
-            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .panel-header i {
+            color: #5865f2;
         }
 
         .config-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px;
-            margin-bottom: 30px;
         }
 
         .config-card {
-            background: #2f3136;
+            background: #222224;
+            border: 1px solid #2a2a2c;
             border-radius: 8px;
             padding: 20px;
-            border: 1px solid #202225;
         }
 
-        .config-card h3 {
-            color: #fff;
-            margin: 0 0 15px 0;
+        .config-card h4 {
+            font-size: 16px;
+            margin-bottom: 15px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        .config-card i {
+        .config-card h4 i {
             color: #5865f2;
-            font-size: 18px;
         }
 
         .config-field {
@@ -143,20 +417,20 @@
             display: block;
             color: #b5bac1;
             font-size: 12px;
-            margin-bottom: 5px;
             font-weight: 600;
             text-transform: uppercase;
+            margin-bottom: 8px;
         }
 
         .config-field input,
         .config-field select,
         .config-field textarea {
             width: 100%;
-            background: #40444b;
-            border: 1px solid #202225;
+            background: #2a2a2c;
+            border: 1px solid #3a3a3c;
             color: #fff;
             padding: 10px;
-            border-radius: 4px;
+            border-radius: 6px;
             font-size: 14px;
             font-family: inherit;
         }
@@ -166,57 +440,15 @@
         .config-field textarea:focus {
             outline: none;
             border-color: #5865f2;
-            background: #36393f;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.2s ease;
-            flex: 1;
-        }
-
-        .btn-primary {
-            background: #5865f2;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #4752c4;
-        }
-
-        .btn-secondary {
-            background: #40444b;
-            color: #b5bac1;
-        }
-
-        .btn-secondary:hover {
-            background: #36393f;
         }
 
         .toggle-switch {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 15px;
-            background: #40444b;
-            border-radius: 4px;
-            margin-bottom: 10px;
-        }
-
-        .toggle-switch label {
-            color: #fff;
-            cursor: pointer;
-            margin: 0;
+            padding: 12px;
+            background: #2a2a2c;
+            border-radius: 6px;
         }
 
         .switch {
@@ -239,7 +471,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: #40444b;
+            background-color: #3a3a3c;
             transition: 0.4s;
             border-radius: 24px;
         }
@@ -264,432 +496,134 @@
             transform: translateX(26px);
         }
 
-        .user-header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: #2f3136;
+        .btn {
+            padding: 12px 24px;
+            border: none;
             border-radius: 8px;
-        }
-
-        .user-avatar-large {
-            width: 64px;
-            height: 64px;
-            border-radius: 50%;
-            border: 3px solid #5865f2;
-        }
-
-        .user-info {
-            color: #fff;
-        }
-
-        .user-name {
-            font-size: 18px;
+            cursor: pointer;
             font-weight: 600;
-            margin-bottom: 5px;
-        }
-
-        .user-status {
-            color: #b5bac1;
             font-size: 14px;
+            transition: all 0.2s;
         }
 
+        .btn-primary {
+            background: #5865f2;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #4752c4;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #b5bac1;
+        }
+
+        .loading i {
+            font-size: 48px;
+            margin-bottom: 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
         @media (max-width: 768px) {
-            .dashboard-sidebar {
-                width: 100%;
-                height: auto;
-                position: relative;
-                border-right: none;
-                border-bottom: 1px solid #202225;
-                max-height: 300px;
-                overflow-y: auto;
+            .main-container {
+                padding: 20px;
             }
 
-            .dashboard-main-content {
-                margin-left: 0;
-            }
-
-            .config-grid {
+            .servers-grid,
+            .modules-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .nav-links {
+                display: none;
             }
         }
     </style>
 </head>
 <body>
-    <div class="dashboard-container" style="display: flex;">
-        <!-- Sidebar -->
-        <div class="dashboard-sidebar">
-            <div class="user-header">
-                <img id="user-avatar" class="user-avatar-large" src="https://via.placeholder.com/64" alt="Usuario">
-                <div class="user-info">
-                    <div class="user-name" id="username">Cargando...</div>
-                    <div class="user-status">Bot Admin</div>
-                </div>
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="nav-left">
+            <div class="nav-logo">
+                <i class="fas fa-robot"></i>
+                <span>Project 13</span>
             </div>
-
-            <!-- Mensajes -->
-            <div class="sidebar-category">
-                <div class="category-title">📬 Mensajes</div>
-                <div class="category-items">
-                    <div class="sidebar-item active" onclick="showSection(event, 'bienvenidas')">
-                        <i class="fas fa-door-open"></i> Bienvenidas
-                    </div>
-                    <div class="sidebar-item" onclick="showSection(event, 'despedidas')">
-                        <i class="fas fa-door-closed"></i> Despedidas
-                    </div>
-                    <div class="sidebar-item" onclick="showSection(event, 'invite-tracker')">
-                        <i class="fas fa-users"></i> Invite Tracker
-                    </div>
-                </div>
+            <div class="nav-links">
+                <a class="nav-link active" onclick="showServersView()">Dashboard</a>
+                <a class="nav-link" href="#">Resources <i class="fas fa-chevron-down"></i></a>
+                <a class="nav-link" href="#" style="color: #faa61a;">Premium</a>
             </div>
-
-            <!-- Moderación -->
-            <div class="sidebar-category">
-                <div class="category-title">🛡️ Moderación</div>
-                <div class="category-items">
-                    <div class="sidebar-item" onclick="showSection(event, 'automod')">
-                        <i class="fas fa-shield-alt"></i> AutoMod
-                    </div>
-                    <div class="sidebar-item" onclick="showSection(event, 'logs')">
-                        <i class="fas fa-book"></i> Logs
-                    </div>
-                    <div class="sidebar-item" onclick="showSection(event, 'infracciones')">
-                        <i class="fas fa-gavel"></i> Infracciones
-                    </div>
-                </div>
+        </div>
+        <div class="nav-right">
+            <i class="fas fa-cog nav-icon"></i>
+            <div class="nav-icon">
+                <i class="fas fa-flag"></i> <i class="fas fa-chevron-down"></i>
             </div>
-
-            <!-- Música -->
-            <div class="sidebar-category">
-                <div class="category-title">🎵 Música</div>
-                <div class="category-items">
-                    <div class="sidebar-item" onclick="showSection(event, 'musica-config')">
-                        <i class="fas fa-music"></i> Configuración
-                    </div>
-                    <div class="sidebar-item" onclick="showSection(event, 'playlists')">
-                        <i class="fas fa-list"></i> Playlists
-                    </div>
-                </div>
+            <div class="user-menu" onclick="logout()">
+                <div class="user-avatar" id="user-avatar-initials">U</div>
+                <span class="user-name" id="username-nav">Usuario</span>
+                <i class="fas fa-chevron-down"></i>
             </div>
+        </div>
+    </nav>
 
-            <!-- Sistema -->
-            <div class="sidebar-category">
-                <div class="category-title">⚙️ Sistema</div>
-                <div class="category-items">
-                    <div class="sidebar-item" onclick="showSection(event, 'general')">
-                        <i class="fas fa-cog"></i> General
-                    </div>
-                    <div class="sidebar-item" onclick="showSection(event, 'estadisticas')">
-                        <i class="fas fa-chart-bar"></i> Estadísticas
-                    </div>
-                    <div class="sidebar-item" onclick="logout()">
-                        <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-                    </div>
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Servers Selection View -->
+        <div class="servers-view" id="servers-view">
+            <h1 class="view-title">Dashboard</h1>
+            <p class="view-subtitle">¡Bienvenido de vuelta! ¿Qué servidor te gustaría gestionar hoy?</p>
+            <div class="servers-grid" id="servers-grid">
+                <div class="loading">
+                    <i class="fas fa-spinner"></i>
+                    <p>Cargando servidores...</p>
                 </div>
             </div>
         </div>
 
-        <div class="dashboard-main-content">
-            <!-- Selector de Servidor -->
-            <div id="guild-selector-container" style="margin-bottom: 30px; padding: 20px; background: #2f3136; border-radius: 8px; border: 1px solid #202225;">
-                <label style="color: #fff; font-weight: 600; margin-right: 15px;">Selecciona tu servidor:</label>
-                <div id="guild-selector" style="display: inline-block;"></div>
-            </div>
-            <!-- Bienvenidas -->
-            <div id="bienvenidas" class="content-section active">
-                <div class="section-header">
-                    <h2><i class="fas fa-door-open"></i> Mensajes de Bienvenida</h2>
-                </div>
-                <div class="config-grid">
-                    <div class="config-card">
-                        <h3><i class="fas fa-toggle-on"></i> Habilitar Bienvenidas</h3>
-                        <div class="toggle-switch">
-                            <label>Activado</label>
-                            <label class="switch">
-                                <input type="checkbox" id="welcomeEnabled" checked>
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                    </div>
-                    <div class="config-card">
-                        <h3><i class="fas fa-hashtag"></i> Canal de Bienvenida</h3>
-                        <div class="config-field">
-                            <label>Selecciona el canal</label>
-                            <select id="welcomeChannel">
-                                <option value="">Selecciona un canal</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="config-card">
-                        <h3><i class="fas fa-message"></i> Mensaje Personalizado</h3>
-                        <div class="config-field">
-                            <label>Mensaje</label>
-                            <textarea id="welcomeMessage" style="resize: vertical; min-height: 100px;" placeholder="Bienvenido {user}"></textarea>
-                        </div>
-                        <div class="button-group">
-                            <button class="btn btn-primary" onclick="saveGuildConfig()">Guardar</button>
-                        </div>
+        <!-- Configuration View -->
+        <div class="config-view" id="config-view">
+            <div class="config-header">
+                <button class="back-button" onclick="showServersView()">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </button>
+                <div class="guild-banner" id="guild-banner">
+                    <div class="guild-icon-large" id="guild-icon-large">?</div>
+                    <div class="guild-info-large">
+                        <h2 id="guild-name-large">Cargando...</h2>
+                        <div class="guild-id" id="guild-id-large">-</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Despedidas -->
-            <div id="despedidas" class="content-section">
-                <div class="section-header">
-                    <h2><i class="fas fa-door-closed"></i> Mensajes de Despedida</h2>
-                </div>
-                <div class="config-grid">
-                    <div class="config-card">
-                        <h3><i class="fas fa-toggle-on"></i> Habilitar Despedidas</h3>
-                        <div class="toggle-switch">
-                            <label>Activado</label>
-                            <label class="switch">
-                                <input type="checkbox" id="farewellEnabled">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                    </div>
-                    <div class="config-card">
-                        <h3><i class="fas fa-hashtag"></i> Canal de Despedida</h3>
-                        <div class="config-field">
-                            <label>Selecciona el canal</label>
-                            <select id="farewellChannel">
-                                <option value="">Selecciona un canal</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="config-card">
-                        <h3><i class="fas fa-message"></i> Mensaje Personalizado</h3>
-                        <div class="config-field">
-                            <label>Mensaje</label>
-                            <textarea id="farewellMessage" style="resize: vertical; min-height: 100px;" placeholder="{user} nos ha abandonado :("></textarea>
-                        </div>
-                        <div class="button-group">
-                            <button class="btn btn-primary" onclick="saveGuildConfig()">Guardar</button>
-                        </div>
-                    </div>
-                </div>
+            <!-- Modules Grid -->
+            <div class="modules-grid" id="modules-grid">
+                <!-- Modules will be inserted here by JavaScript -->
             </div>
 
-            <!-- Invite Tracker -->
-            <div id="invite-tracker" class="content-section">
-                <div class="section-header">
-                    <h2><i class="fas fa-users"></i> Invite Tracker</h2>
-                </div>
-                <div class="config-grid">
-                    <div class="config-card">
-                        <h3><i class="fas fa-toggle-on"></i> Habilitar Tracking</h3>
-                        <div class="toggle-switch">
-                            <label>Activado</label>
-                            <label class="switch">
-                                <input type="checkbox" id="inviteTrackerEnabled" checked>
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                        <div class="button-group" style="margin-top: 15px;">
-                            <button class="btn btn-primary" onclick="saveGuildConfig()">Guardar</button>
-                        </div>
-                    </div>
-                    <div class="config-card">
-                        <h3><i class="fas fa-info-circle"></i> Información</h3>
-                        <p style="color: #b5bac1; margin: 0;">Rastrear quién invita a nuevos usuarios al servidor. Se guardará un registro de todas las invitaciones.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- AutoMod -->
-            <div id="automod" class="content-section">
-                <div class="section-header">
-                    <h2><i class="fas fa-shield-alt"></i> Moderación Automática</h2>
-                </div>
-                <div class="config-grid">
-                    <div class="config-card">
-                        <h3><i class="fas fa-words"></i> Filtro de Palabras</h3>
-                        <div class="toggle-switch">
-                            <label>Activado</label>
-                            <label class="switch">
-                                <input type="checkbox" id="automodWordFilter">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                    </div>
-                    <div class="config-card">
-                        <h3><i class="fas fa-spam"></i> Anti-Spam</h3>
-                        <div class="toggle-switch">
-                            <label>Activado</label>
-                            <label class="switch">
-                                <input type="checkbox" id="automodAntiSpam" checked>
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                    </div>
-                    <div class="config-card">
-                        <h3><i class="fas fa-link"></i> Anti-Raid</h3>
-                        <div class="toggle-switch">
-                            <label>Activado</label>
-                            <label class="switch">
-                                <input type="checkbox" id="automodAntiRaid" checked>
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                    </div>
-                    <div class="config-card" style="grid-column: 1 / -1;">
-                        <div class="button-group">
-                            <button class="btn btn-primary" onclick="saveGuildConfig()">Guardar Configuración</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Logs -->
-            <div id="logs" class="content-section">
-                <div class="section-header">
-                    <h2><i class="fas fa-book"></i> Logs de Moderación</h2>
-                </div>
-                <div class="config-grid">
-                    <div class="config-card">
-                        <h3><i class="fas fa-hashtag"></i> Canal de Logs</h3>
-                        <div class="config-field">
-                            <label>Selecciona el canal</label>
-                            <select id="logsChannel">
-                                <option value="">Selecciona un canal</option>
-                            </select>
-                        </div>
-                        <div class="button-group">
-                            <button class="btn btn-primary" onclick="saveGuildConfig()">Guardar</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Infracciones -->
-            <div id="infracciones" class="content-section">
-                <div class="section-header">
-                    <h2><i class="fas fa-gavel"></i> Sistema de Infracciones</h2>
-                </div>
-                <div class="config-grid">
-                    <div class="config-card">
-                        <h3><i class="fas fa-toggle-on"></i> Sistema Activo</h3>
-                        <div class="toggle-switch">
-                            <label>Activado</label>
-                            <label class="switch">
-                                <input type="checkbox" id="infractionsEnabled" checked>
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                        <div class="button-group" style="margin-top: 15px;">
-                            <button class="btn btn-primary" onclick="saveGuildConfig()">Guardar</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Música Config -->
-            <div id="musica-config" class="content-section">
-                <div class="section-header">
-                    <h2><i class="fas fa-music"></i> Configuración de Música</h2>
-                </div>
-                <div class="config-grid">
-                    <div class="config-card">
-                        <h3><i class="fas fa-toggle-on"></i> Música Habilitada</h3>
-                        <div class="toggle-switch">
-                            <label>Activada</label>
-                            <label class="switch">
-                                <input type="checkbox" id="musicEnabled" checked>
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                        <div class="button-group" style="margin-top: 15px;">
-                            <button class="btn btn-primary" onclick="saveGuildConfig()">Guardar</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Playlists -->
-            <div id="playlists" class="content-section">
-                <div class="section-header">
-                    <h2><i class="fas fa-list"></i> Playlists</h2>
-                </div>
-                <div class="config-grid">
-                    <div class="config-card">
-                        <h3><i class="fas fa-info-circle"></i> Playlists Disponibles</h3>
-                        <p style="color: #b5bac1; margin: 0;">Aquí aparecerán las playlists guardadas.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- General -->
-            <div id="general" class="content-section">
-                <div class="section-header">
-                    <h2><i class="fas fa-cog"></i> Configuración General</h2>
-                </div>
-                <div class="config-grid">
-                    <div class="config-card">
-                        <h3><i class="fas fa-tag"></i> Prefijo del Bot</h3>
-                        <div class="config-field">
-                            <label>Prefijo</label>
-                            <input type="text" id="prefixInput" value="!" placeholder="!">
-                        </div>
-                        <div class="button-group">
-                            <button class="btn btn-primary" onclick="saveGuildConfig()">Guardar</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Estadísticas -->
-            <div id="estadisticas" class="content-section">
-                <div class="section-header">
-                    <h2><i class="fas fa-chart-bar"></i> Estadísticas</h2>
-                </div>
-                <div class="config-grid">
-                    <div class="config-card">
-                        <h3><i class="fas fa-users"></i> Miembros</h3>
-                        <p style="color: #5865f2; font-size: 24px; font-weight: bold; margin: 10px 0;">-</p>
-                        <p style="color: #b5bac1; margin: 0;">Cargando...</p>
-                    </div>
-                    <div class="config-card">
-                        <h3><i class="fas fa-message"></i> Mensajes (hoy)</h3>
-                        <p style="color: #5865f2; font-size: 24px; font-weight: bold; margin: 10px 0;">-</p>
-                        <p style="color: #b5bac1; margin: 0;">Cargando...</p>
-                    </div>
-                    <div class="config-card">
-                        <h3><i class="fas fa-shield-alt"></i> Acciones de Mod</h3>
-                        <p style="color: #5865f2; font-size: 24px; font-weight: bold; margin: 10px 0;">-</p>
-                        <p style="color: #b5bac1; margin: 0;">Cargando...</p>
-                    </div>
-                </div>
+            <!-- Module Configuration Panels -->
+            <div id="module-panels">
+                <!-- Panels will be inserted here by JavaScript -->
             </div>
         </div>
     </div>
-    
+
     <script src="./dashboard.js"></script>
-    <script>
-        function showSection(event, sectionId) {
-            event.preventDefault();
-            
-            // Ocultar todas las secciones
-            document.querySelectorAll('.content-section').forEach(section => {
-                section.classList.remove('active');
-            });
-            
-            // Ocultar todos los items de sidebar
-            document.querySelectorAll('.sidebar-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            
-            // Mostrar la sección seleccionada
-            const section = document.getElementById(sectionId);
-            if (section) {
-                section.classList.add('active');
-            }
-            
-            // Marcar el item como activo
-            event.target.closest('.sidebar-item').classList.add('active');
-        }
-    </script>
 </body>
 </html>
