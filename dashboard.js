@@ -67,7 +67,7 @@ const modules = [
 
 document.addEventListener('DOMContentLoaded', function() {
     checkAuth();
-    
+
     setTimeout(() => {
         if (currentToken) {
             loadGuilds();
@@ -240,7 +240,7 @@ async function selectGuild(guildId) {
         );
         const data = await response.json();
 
-        // Si el bot no está en el servidor (404 o error de permisos)
+        // Si el bot no está en el servidor
         if (!response.ok) {
             if (response.status === 404 || response.status === 403) {
                 // Mostrar modal de invitación
@@ -251,8 +251,14 @@ async function selectGuild(guildId) {
             return;
         }
 
-        if (!data.success) {
-            showNotification('❌ Error al cargar la configuración del servidor', 'error');
+        // Verificar si el bot está en el servidor
+        if (!data.success || data.botInGuild === false) {
+            if (data.error === 'Bot not in server' || data.botInGuild === false) {
+                // Mostrar modal de invitación
+                showInviteModal(guild);
+                return;
+            }
+            showNotification('❌ Error al cargar la configuración del servidor: ' + (data.error || 'Error desconocido'), 'error');
             return;
         }
 
