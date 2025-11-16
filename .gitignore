@@ -15,6 +15,7 @@ bot/dc-bot/node_modules/
 # Ignorar archivos locales del bot
 bot/dc-bot/.env
 bot/dc-bot/.env.local
+bot/dc-bot/index.js
 
 # Ignorar archivos de sistema
 .DS_Store
