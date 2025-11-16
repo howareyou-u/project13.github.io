@@ -73,6 +73,16 @@ document.addEventListener('DOMContentLoaded', function() {
             loadGuilds();
         }
     }, 500);
+
+    // Cerrar modal al hacer clic fuera
+    const modal = document.getElementById('invite-modal');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeInviteModal();
+            }
+        });
+    }
 });
 
 function getCookie(name) {
@@ -230,7 +240,18 @@ async function selectGuild(guildId) {
         );
         const data = await response.json();
 
-        if (!response.ok || !data.success) {
+        // Si el bot no está en el servidor (404 o error de permisos)
+        if (!response.ok) {
+            if (response.status === 404 || response.status === 403) {
+                // Mostrar modal de invitación
+                showInviteModal(guild);
+                return;
+            }
+            showNotification('❌ Error al cargar la configuración del servidor', 'error');
+            return;
+        }
+
+        if (!data.success) {
             showNotification('❌ Error al cargar la configuración del servidor', 'error');
             return;
         }
@@ -245,8 +266,36 @@ async function selectGuild(guildId) {
 
     } catch (error) {
         console.error('Error loading guild config:', error);
-        showNotification('❌ Error al cargar la configuración', 'error');
+        // Si hay un error de red, asumimos que el bot no está
+        showInviteModal(guild);
     }
+}
+
+// Mostrar modal de invitación
+function showInviteModal(guild) {
+    const modal = document.getElementById('invite-modal');
+    if (modal) {
+        modal.classList.add('active');
+        // Guardar el guildId para cuando se cierre el modal
+        modal.dataset.guildId = guild.id;
+        modal.dataset.guildName = guild.name;
+    }
+}
+
+// Cerrar modal de invitación
+function closeInviteModal() {
+    const modal = document.getElementById('invite-modal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+// Abrir enlace de invitación
+function openInviteLink() {
+    const inviteUrl = 'https://discord.com/api/oauth2/authorize?client_id=1200476680280608958&permissions=8&scope=bot%20applications.commands';
+    window.open(inviteUrl, '_blank');
+    closeInviteModal();
+    showNotification('✅ Abre la nueva pestaña y autoriza el bot. Luego recarga esta página.', 'success');
 }
 
 // Mostrar vista de configuración
@@ -721,7 +770,7 @@ async function saveModuleConfig(moduleId) {
     switch(moduleId) {
         case 'welcome':
             config.welcome = {
-                enabled: document.getElementById('welcomeEnabled')?.checked || false,
+            enabled: document.getElementById('welcomeEnabled')?.checked || false,
                 channel: document.getElementById('welcomeChannel')?.value || null,
                 message: document.getElementById('welcomeMessage')?.value || 'Bienvenido {user} al servidor!'
             };

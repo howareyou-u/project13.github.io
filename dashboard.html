@@ -539,6 +539,123 @@
             to { transform: rotate(360deg); }
         }
 
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: #1a1a1c;
+            border: 1px solid #2a2a2c;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .modal-header i {
+            color: #faa61a;
+            font-size: 28px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #b5bac1;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: #2a2a2c;
+            color: #fff;
+        }
+
+        .modal-content {
+            color: #b5bac1;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .modal-content p {
+            margin-bottom: 15px;
+        }
+
+        .invite-link {
+            background: #2a2a2c;
+            border: 1px solid #3a3a3c;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #5865f2;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .btn-secondary {
+            background: #2a2a2c;
+            color: #fff;
+        }
+
+        .btn-secondary:hover {
+            background: #3a3a3c;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .main-container {
@@ -620,6 +737,40 @@
             <!-- Module Configuration Panels -->
             <div id="module-panels">
                 <!-- Panels will be inserted here by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para invitar bot -->
+    <div class="modal-overlay" id="invite-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>
+                    <i class="fas fa-robot"></i>
+                    Bot no encontrado
+                </h3>
+                <button class="modal-close" onclick="closeInviteModal()" type="button">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-content">
+                <p>El bot no está en este servidor. Necesitas invitarlo para poder configurarlo.</p>
+                <p><strong>Pasos para invitar el bot:</strong></p>
+                <ol style="margin-left: 20px; margin-top: 10px;">
+                    <li>Haz clic en el botón "Invitar Bot" de abajo</li>
+                    <li>Selecciona el servidor donde quieres agregarlo</li>
+                    <li>Autoriza los permisos necesarios</li>
+                    <li>Vuelve aquí y recarga la página</li>
+                </ol>
+                <div class="invite-link" id="invite-link">
+                    https://discord.com/api/oauth2/authorize?client_id=1200476680280608958&permissions=8&scope=bot%20applications.commands
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeInviteModal()" type="button">Cancelar</button>
+                <button class="btn btn-primary" onclick="openInviteLink()" type="button">
+                    <i class="fas fa-external-link-alt"></i> Invitar Bot
+                </button>
             </div>
         </div>
     </div>
