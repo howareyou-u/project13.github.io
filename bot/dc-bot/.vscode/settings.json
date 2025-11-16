@@ -1,0 +1,7 @@
+{
+  // Evita que VS Code intente descargar esquemas JSON remotos (evita errores cuando schemastore está caído)
+  "json.schemaDownload.enable": false,
+
+  // Opcional: desactivar validación si aún ves advertencias (uncomment si lo necesitas)
+  // "json.validate.enable": false
+}

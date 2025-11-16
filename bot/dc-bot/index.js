@@ -17,12 +17,19 @@ const fs = require('fs');
 const path = require('path');
 
 // === CONFIGURA TUS DATOS AQUÍ (usa variables de entorno en producción) ===
-// Define estas variables en bot/.env o en tu entorno de despliegue:
+// Define estas variables en bot/dc-bot/.env o en tu entorno de despliegue:
 // DISCORD_TOKEN, CLIENT_ID, GUILD_ID, ADMIN_TOKEN (opcional)
 require('dotenv').config();
-const TOKEN = process.env.DISCORD_TOKEN || '';
-const CLIENT_ID = process.env.CLIENT_ID || '1200476680280608958';
-const GUILD_ID = process.env.GUILD_ID || '1235989145399070871';
+
+const TOKEN = process.env.DISCORD_TOKEN;
+const CLIENT_ID = process.env.CLIENT_ID;
+const GUILD_ID = process.env.GUILD_ID;
+
+if (!TOKEN || !CLIENT_ID) {
+  console.error('❌ Error: Faltan variables de entorno requeridas (DISCORD_TOKEN, CLIENT_ID)');
+  console.error('   Crea un archivo .env en bot/dc-bot/ con tus credenciales');
+  process.exit(1);
+}
 
 // Instancia única del cliente
 const client = new Client({

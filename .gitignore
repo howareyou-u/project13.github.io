@@ -1,15 +1,37 @@
 # Ignorar archivos de configuración con datos sensibles
 auth/.env
+.env
+.env.local
+.env.*.local
+*.env
+!*.env.example
 
 # Ignorar módulos de node
 auth/node_modules/
 node_modules/
 bot/node_modules/
+bot/dc-bot/node_modules/
 
 # Ignorar archivos locales del bot
-bot/.env
+bot/dc-bot/.env
+bot/dc-bot/.env.local
 
 # Ignorar archivos de sistema
 .DS_Store
 Thumbs.db
 .vercel
+
+# Ignorar archivos con tokens o credenciales
+**/config.json
+**/*secret*
+**/*token*
+**/*key*
+**/*password*
+**/*credential*
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

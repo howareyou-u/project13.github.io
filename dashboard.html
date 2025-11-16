@@ -417,10 +417,8 @@
                         <h3><i class="fas fa-hashtag"></i> Canal de Bienvenida</h3>
                         <div class="config-field">
                             <label>Selecciona el canal</label>
-                            <select>
-                                <option>general</option>
-                                <option>bienvenidos</option>
-                                <option>logs</option>
+                            <select id="welcomeChannel">
+                                <option value="">Selecciona un canal</option>
                             </select>
                         </div>
                     </div>
@@ -428,11 +426,10 @@
                         <h3><i class="fas fa-message"></i> Mensaje Personalizado</h3>
                         <div class="config-field">
                             <label>Mensaje</label>
-                            <textarea style="resize: vertical; min-height: 100px;" placeholder="Bienvenido {user}"></textarea>
+                            <textarea id="welcomeMessage" style="resize: vertical; min-height: 100px;" placeholder="Bienvenido {user}"></textarea>
                         </div>
                         <div class="button-group">
-                            <button class="btn btn-primary">Guardar</button>
-                            <button class="btn btn-secondary">Cancelar</button>
+                            <button class="btn btn-primary" onclick="saveGuildConfig()">Guardar</button>
                         </div>
                     </div>
                 </div>
@@ -449,7 +446,7 @@
                         <div class="toggle-switch">
                             <label>Activado</label>
                             <label class="switch">
-                                <input type="checkbox">
+                                <input type="checkbox" id="farewellEnabled">
                                 <span class="slider"></span>
                             </label>
                         </div>
@@ -458,10 +455,8 @@
                         <h3><i class="fas fa-hashtag"></i> Canal de Despedida</h3>
                         <div class="config-field">
                             <label>Selecciona el canal</label>
-                            <select>
-                                <option>general</option>
-                                <option>despedidas</option>
-                                <option>logs</option>
+                            <select id="farewellChannel">
+                                <option value="">Selecciona un canal</option>
                             </select>
                         </div>
                     </div>
@@ -469,11 +464,10 @@
                         <h3><i class="fas fa-message"></i> Mensaje Personalizado</h3>
                         <div class="config-field">
                             <label>Mensaje</label>
-                            <textarea style="resize: vertical; min-height: 100px;" placeholder="{user} nos ha abandonado :("></textarea>
+                            <textarea id="farewellMessage" style="resize: vertical; min-height: 100px;" placeholder="{user} nos ha abandonado :("></textarea>
                         </div>
                         <div class="button-group">
-                            <button class="btn btn-primary">Guardar</button>
-                            <button class="btn btn-secondary">Cancelar</button>
+                            <button class="btn btn-primary" onclick="saveGuildConfig()">Guardar</button>
                         </div>
                     </div>
                 </div>
@@ -490,9 +484,12 @@
                         <div class="toggle-switch">
                             <label>Activado</label>
                             <label class="switch">
-                                <input type="checkbox" checked>
+                                <input type="checkbox" id="inviteTrackerEnabled" checked>
                                 <span class="slider"></span>
                             </label>
+                        </div>
+                        <div class="button-group" style="margin-top: 15px;">
+                            <button class="btn btn-primary" onclick="saveGuildConfig()">Guardar</button>
                         </div>
                     </div>
                     <div class="config-card">
@@ -513,7 +510,7 @@
                         <div class="toggle-switch">
                             <label>Activado</label>
                             <label class="switch">
-                                <input type="checkbox">
+                                <input type="checkbox" id="automodWordFilter">
                                 <span class="slider"></span>
                             </label>
                         </div>
@@ -523,7 +520,7 @@
                         <div class="toggle-switch">
                             <label>Activado</label>
                             <label class="switch">
-                                <input type="checkbox" checked>
+                                <input type="checkbox" id="automodAntiSpam" checked>
                                 <span class="slider"></span>
                             </label>
                         </div>
@@ -533,9 +530,14 @@
                         <div class="toggle-switch">
                             <label>Activado</label>
                             <label class="switch">
-                                <input type="checkbox" checked>
+                                <input type="checkbox" id="automodAntiRaid" checked>
                                 <span class="slider"></span>
                             </label>
+                        </div>
+                    </div>
+                    <div class="config-card" style="grid-column: 1 / -1;">
+                        <div class="button-group">
+                            <button class="btn btn-primary" onclick="saveGuildConfig()">Guardar Configuración</button>
                         </div>
                     </div>
                 </div>
@@ -551,14 +553,12 @@
                         <h3><i class="fas fa-hashtag"></i> Canal de Logs</h3>
                         <div class="config-field">
                             <label>Selecciona el canal</label>
-                            <select>
-                                <option>mod-logs</option>
-                                <option>general</option>
-                                <option>admin</option>
+                            <select id="logsChannel">
+                                <option value="">Selecciona un canal</option>
                             </select>
                         </div>
                         <div class="button-group">
-                            <button class="btn btn-primary">Guardar</button>
+                            <button class="btn btn-primary" onclick="saveGuildConfig()">Guardar</button>
                         </div>
                     </div>
                 </div>
@@ -575,9 +575,12 @@
                         <div class="toggle-switch">
                             <label>Activado</label>
                             <label class="switch">
-                                <input type="checkbox" checked>
+                                <input type="checkbox" id="infractionsEnabled" checked>
                                 <span class="slider"></span>
                             </label>
+                        </div>
+                        <div class="button-group" style="margin-top: 15px;">
+                            <button class="btn btn-primary" onclick="saveGuildConfig()">Guardar</button>
                         </div>
                     </div>
                 </div>
@@ -594,9 +597,12 @@
                         <div class="toggle-switch">
                             <label>Activada</label>
                             <label class="switch">
-                                <input type="checkbox" checked>
+                                <input type="checkbox" id="musicEnabled" checked>
                                 <span class="slider"></span>
                             </label>
+                        </div>
+                        <div class="button-group" style="margin-top: 15px;">
+                            <button class="btn btn-primary" onclick="saveGuildConfig()">Guardar</button>
                         </div>
                     </div>
                 </div>
@@ -625,10 +631,10 @@
                         <h3><i class="fas fa-tag"></i> Prefijo del Bot</h3>
                         <div class="config-field">
                             <label>Prefijo</label>
-                            <input type="text" value="!" placeholder="!">
+                            <input type="text" id="prefixInput" value="!" placeholder="!">
                         </div>
                         <div class="button-group">
-                            <button class="btn btn-primary">Guardar</button>
+                            <button class="btn btn-primary" onclick="saveGuildConfig()">Guardar</button>
                         </div>
                     </div>
                 </div>

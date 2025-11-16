@@ -32,7 +32,7 @@ module.exports = {
           gcfg = cfg[guild.id];
         }
 
-        if (!gcfg || !gcfg.welcome) return; // nothing configured
+        if (!gcfg || !gcfg.welcome || !gcfg.welcome.enabled) return; // nothing configured
 
         const w = gcfg.welcome;
 
@@ -41,9 +41,12 @@ module.exports = {
         const ch = await guild.channels.fetch(w.channel).catch(() => null);
         if (ch && ch.send) {
           const color = w.colorWelcome || '#2B65EC';
+          const message = w.message || 'Bienvenido {user} al servidor!';
+          const description = message.replace(/{user}/g, member.toString());
+          
           const embed = new EmbedBuilder()
             .setTitle('🎉 Bienvenido')
-            .setDescription(`${member} se ha unido al servidor.`)
+            .setDescription(description)
             .setColor(color)
             .setThumbnail(member.displayAvatarURL({ dynamic: true }))
             .addFields({ name: 'Usuario', value: `${member.user.tag} (${member.id})`, inline: true })

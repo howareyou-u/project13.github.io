@@ -6,7 +6,7 @@
     "node": "20.x"
   },
   "dependencies": {
-    "mongodb": "^5.9.0"
+    "mongodb": "^5.9.2"
   },
   "scripts": {
     "start": "node api/callback.js"
