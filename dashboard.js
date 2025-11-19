@@ -253,7 +253,31 @@ function handleServerClick(guildId) {
         return;
     }
 
-    // Si botInGuild es true o null/undefined (desconocido), intentar abrir la configuración
+    // Si el estado es desconocido (null), hacemos una comprobación rápida al endpoint de guild-config
+    if (guild.botInGuild === null) {
+        // Mostrar notificación de comprobación
+        showNotification('Comprobando estado del bot en el servidor...', 'success');
+        fetch(`/api/guild-config?guildId=${guildId}&token=${encodeURIComponent(currentToken)}`)
+            .then(resp => resp.json().then(body => ({ ok: resp.ok, status: resp.status, body })))
+            .then(result => {
+                const data = result.body || {};
+                // Si el endpoint indica que el bot no está
+                if (!result.ok || data.botInGuild === false) {
+                    openInviteLink(guildId);
+                    return;
+                }
+                // Si el bot está o la respuesta es positiva, abrir la configuración
+                selectGuild(guildId);
+            })
+            .catch(err => {
+                console.error('Error comprobando guild-config:', err);
+                // En caso de error, abrir modal de invitación como fallback
+                openInviteLink(guildId);
+            });
+        return;
+    }
+
+    // Si botInGuild es true => intentar abrir la configuración
     return selectGuild(guildId);
 }
 
