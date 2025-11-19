@@ -211,6 +211,29 @@
             font-size: 18px;
         }
 
+        /* Bot presence badge (small circle next to server name) */
+        .bot-badge {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-left: 8px;
+            vertical-align: middle;
+            box-shadow: 0 0 0 3px rgba(0,0,0,0.25);
+        }
+
+        .bot-present {
+            background: #43b581; /* green */
+        }
+
+        .bot-absent {
+            background: #f04747; /* red */
+        }
+
+        .bot-unknown {
+            background: #72767d; /* gray */
+        }
+
         /* Configuration View */
         .config-view {
             display: none;

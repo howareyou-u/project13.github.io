@@ -27,10 +27,41 @@ module.exports = async (req, res) => {
       return (guild.permissions & 0x8) === 0x8; // ADMINISTRATOR permission
     });
 
-    res.status(200).json({ 
-      success: true, 
-      guilds: adminGuilds 
-    });
+    // Intentar determinar si el bot está presente en cada guild (requiere BOT_TOKEN en env)
+    const botToken = process.env.BOT_TOKEN || process.env.DISCORD_TOKEN;
+
+    if (botToken) {
+      // Comprobar presencia del bot para cada guild (paralelizar)
+      const checks = adminGuilds.map(async g => {
+        try {
+          const r = await fetch(`https://discord.com/api/v10/guilds/${g.id}`, {
+            headers: {
+              Authorization: `Bot ${botToken}`,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          // Si el bot puede obtener información del guild, asumimos que está presente
+          return Object.assign({}, g, { botInGuild: r.ok });
+        } catch (e) {
+          return Object.assign({}, g, { botInGuild: false });
+        }
+      });
+
+      const guildsWithBot = await Promise.all(checks);
+
+      res.status(200).json({ 
+        success: true, 
+        guilds: guildsWithBot 
+      });
+    } else {
+      // Si no hay BOT_TOKEN, devolvemos la lista sin información sobre el bot
+      const guildsNoBotInfo = adminGuilds.map(g => Object.assign({}, g, { botInGuild: null }));
+      res.status(200).json({ 
+        success: true, 
+        guilds: guildsNoBotInfo 
+      });
+    }
 
   } catch (err) {
     console.error('Guilds error:', err);

@@ -212,14 +212,25 @@ function displayServers(guilds) {
             ? `<img src="${iconUrl}" alt="${guild.name}">`
             : `<span>${guild.name.substring(0, 2).toUpperCase()}</span>`;
 
+        // Determinar badge del bot: true = verde, false = rojo, null/undefined = gris (desconocido)
+        let botBadge = '';
+        if (guild.botInGuild === true) {
+            botBadge = `<span class="bot-badge bot-present" title="Bot presente"></span>`;
+        } else if (guild.botInGuild === false) {
+            botBadge = `<span class="bot-badge bot-absent" title="Bot no presente"></span>`;
+        } else {
+            botBadge = `<span class="bot-badge bot-unknown" title="Estado del bot desconocido"></span>`;
+        }
+
         return `
-            <div class="server-card" onclick="selectGuild('${guild.id}')">
+            <div class="server-card" onclick="handleServerClick('${guild.id}')">
                 <div class="server-icon">
                     ${iconDisplay}
                 </div>
                 <div class="server-info">
                     <div class="server-name">
                         ${guild.name}
+                        ${botBadge}
                         <i class="fas fa-crown server-crown"></i>
                     </div>
                     <div class="server-id">${guild.id}</div>
@@ -227,6 +238,23 @@ function displayServers(guilds) {
             </div>
         `;
     }).join('');
+}
+
+// Manejar click en tarjeta de servidor: si el bot NO está en el servidor, abrir link de invitación;
+// si el bot está, navegar a la configuración de ese servidor.
+function handleServerClick(guildId) {
+    const guild = allGuilds.find(g => g.id === guildId);
+    // Por seguridad, si no encontramos el guild en memoria, intentamos cargar la configuración normalmente
+    if (!guild) return selectGuild(guildId);
+
+    // Si botInGuild es exactamente false => abrir invitación directa
+    if (guild.botInGuild === false) {
+        openInviteLink(guildId);
+        return;
+    }
+
+    // Si botInGuild es true o null/undefined (desconocido), intentar abrir la configuración
+    return selectGuild(guildId);
 }
 
 // Seleccionar un servidor y mostrar vista de configuración
@@ -285,6 +313,18 @@ function showInviteModal(guild) {
         // Guardar el guildId para cuando se cierre el modal
         modal.dataset.guildId = guild.id;
         modal.dataset.guildName = guild.name;
+        // Actualizar link de invitación dentro del modal para invitar directamente al servidor seleccionado
+        try {
+            const inviteLinkEl = document.getElementById('invite-link');
+            if (inviteLinkEl) {
+                const base = 'https://discord.com/api/oauth2/authorize';
+                const clientId = '1200476680280608958';
+                const inviteUrl = `${base}?client_id=${clientId}&permissions=8&scope=bot%20applications.commands&guild_id=${guild.id}&disable_guild_select=true`;
+                inviteLinkEl.textContent = inviteUrl;
+            }
+        } catch (e) {
+            // ignore
+        }
     }
 }
 
@@ -296,12 +336,19 @@ function closeInviteModal() {
     }
 }
 
-// Abrir enlace de invitación
-function openInviteLink() {
-    const inviteUrl = 'https://discord.com/api/oauth2/authorize?client_id=1200476680280608958&permissions=8&scope=bot%20applications.commands';
+// Abrir enlace de invitación. Si se pasa guildId o si el modal tiene dataset.guildId, se preselecciona el servidor
+function openInviteLink(guildId) {
+    const base = 'https://discord.com/api/oauth2/authorize';
+    const clientId = '1200476680280608958';
+    const guildParam = guildId || document.getElementById('invite-modal')?.dataset?.guildId;
+    let inviteUrl = `${base}?client_id=${clientId}&permissions=8&scope=bot%20applications.commands`;
+    if (guildParam) {
+        inviteUrl += `&guild_id=${guildParam}&disable_guild_select=true`;
+    }
+
     window.open(inviteUrl, '_blank');
     closeInviteModal();
-    showNotification('✅ Abre la nueva pestaña y autoriza el bot. Luego recarga esta página.', 'success');
+    showNotification('✅ Abre la nueva pestaña y autoriza el bot. Luego vuelve aquí y recarga la página.', 'success');
 }
 
 // Mostrar vista de configuración
