@@ -250,12 +250,20 @@ function loadUserData(token) {
 // Cargar servidores del usuario
 async function loadGuilds() {
     try {
+        console.log('[dashboard] loadGuilds start, token present?', !!currentToken);
         const response = await fetch(`/api/guilds?token=${encodeURIComponent(currentToken)}`);
         const data = await response.json();
+        console.log('[dashboard] /api/guilds response', response.status, data && (Array.isArray(data.guilds) ? data.guilds.length + ' guilds' : data.guilds));
 
         if (!response.ok || !data.success) {
             console.error('Error loading guilds:', data.error);
             document.getElementById('servers-grid').innerHTML = '<div class="loading"><p>Error al cargar servidores</p></div>';
+            return;
+        }
+
+        if (!data.guilds || !Array.isArray(data.guilds)) {
+            console.error('[dashboard] /api/guilds did not return guilds array', data);
+            document.getElementById('servers-grid').innerHTML = '<div class="loading"><p>Error al cargar servidores (respuesta inválida)</p></div>';
             return;
         }
 
