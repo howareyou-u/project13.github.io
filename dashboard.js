@@ -251,7 +251,7 @@ function loadUserData(token) {
 async function loadGuilds() {
     try {
         console.log('[dashboard] loadGuilds start, token present?', !!currentToken);
-        const response = await fetch(`/api/guilds?token=${encodeURIComponent(currentToken)}`);
+        const response = await fetchWithTimeout(`/api/guilds?token=${encodeURIComponent(currentToken)}`, {}, 10000);
         const data = await response.json();
         console.log('[dashboard] /api/guilds response', response.status, data && (Array.isArray(data.guilds) ? data.guilds.length + ' guilds' : data.guilds));
 
@@ -274,7 +274,24 @@ async function loadGuilds() {
 
     } catch (error) {
         console.error('Error loading guilds:', error);
-        document.getElementById('servers-grid').innerHTML = '<div class="loading"><p>Error al cargar servidores</p></div>';
+        document.getElementById('servers-grid').innerHTML = '<div class="loading"><p>Error al cargar servidores</p><div style="margin-top:12px"><button class="btn btn-primary" id="retry-guilds">Reintentar</button></div></div>';
+        const retryBtn = document.getElementById('retry-guilds');
+        if (retryBtn) retryBtn.addEventListener('click', () => { document.getElementById('servers-grid').innerHTML = '<div class="loading"><i class="fas fa-spinner"></i><p>Cargando servidores...</p></div>'; loadGuilds(); });
+    }
+}
+
+// fetch con timeout
+async function fetchWithTimeout(url, options = {}, timeout = 10000) {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeout);
+    try {
+        const resp = await fetch(url, Object.assign({}, options, { signal: controller.signal }));
+        clearTimeout(id);
+        return resp;
+    } catch (err) {
+        clearTimeout(id);
+        console.error('[fetchWithTimeout] error for', url, err);
+        throw err;
     }
 }
 
@@ -1060,3 +1077,4 @@ function logout() {
     currentConfig = null;
     window.location.href = './login.html';
 }
+
