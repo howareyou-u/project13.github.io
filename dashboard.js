@@ -97,6 +97,81 @@ function getCookie(name) {
     return null;
 }
 
+// Comprobar en background servidores con estado desconocido y actualizar la UI
+async function checkUnknownGuilds(guilds) {
+    if (!guilds || !guilds.length) return;
+
+    // Filtrar los que tienen botInGuild === null
+    const unknown = guilds.filter(g => g.botInGuild === null);
+    if (!unknown.length) return;
+
+    // Limitar concurrencia para no golpear la API de Discord
+    const CONCURRENCY = 5;
+    let index = 0;
+
+    async function worker() {
+        while (index < unknown.length) {
+            const i = index++;
+            const g = unknown[i];
+            try {
+                const resp = await fetch(`/api/guild-config?guildId=${g.id}&token=${encodeURIComponent(currentToken)}`);
+                const body = await resp.json().catch(() => ({}));
+                // Determinar presencia del bot según la respuesta
+                if (!resp.ok || body.botInGuild === false || body.error === 'Bot not in server') {
+                    updateGuildPresence(g.id, false);
+                } else {
+                    updateGuildPresence(g.id, true);
+                }
+            } catch (err) {
+                console.error('Error checking guild-config for', g.id, err);
+                // En caso de fallo, no cambiar nada (permanece unknown)
+            }
+            // Pequeña espera para espaciar peticiones
+            await new Promise(r => setTimeout(r, 200));
+        }
+    }
+
+    // Lanzar varios workers
+    const workers = [];
+    for (let w = 0; w < CONCURRENCY; w++) workers.push(worker());
+    await Promise.all(workers);
+}
+
+// Actualizar la propiedad botInGuild en memoria y actualizar la tarjeta en la UI
+function updateGuildPresence(guildId, present) {
+    const gIdx = allGuilds.findIndex(g => g.id === guildId);
+    if (gIdx !== -1) {
+        allGuilds[gIdx].botInGuild = present;
+    }
+
+    // Actualizar el DOM: buscar la tarjeta correspondiente y cambiar el badge
+    const serversGrid = document.getElementById('servers-grid');
+    if (!serversGrid) return;
+
+    // Encontrar el server-card que contiene la server-id igual a guildId
+    const cards = Array.from(serversGrid.querySelectorAll('.server-card'));
+    for (const card of cards) {
+        const idEl = card.querySelector('.server-id');
+        if (!idEl) continue;
+        if (idEl.textContent === guildId) {
+            const nameEl = card.querySelector('.server-name');
+            if (!nameEl) break;
+            // Remover badge si existe
+            const existing = nameEl.querySelector('.bot-badge');
+            if (existing) existing.remove();
+            // Crear nuevo badge
+            const span = document.createElement('span');
+            span.classList.add('bot-badge');
+            span.title = present ? 'Bot presente' : 'Bot no presente';
+            span.classList.add(present ? 'bot-present' : 'bot-absent');
+            // Insertar antes de la crown icon
+            const crown = nameEl.querySelector('.server-crown');
+            if (crown) nameEl.insertBefore(span, crown);
+            break;
+        }
+    }
+}
+
 function getUrlParam(param) {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get(param);
@@ -187,6 +262,8 @@ async function loadGuilds() {
 
         allGuilds = data.guilds;
         displayServers(data.guilds);
+        // Comprobar en background los guilds con estado desconocido (botInGuild === null)
+        checkUnknownGuilds(data.guilds);
 
     } catch (error) {
         console.error('Error loading guilds:', error);
