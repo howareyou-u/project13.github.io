@@ -1,89 +1,88 @@
-// Funciones del Dashboard
-let currentToken = null;
-let currentGuild = null;
-let currentConfig = null;
-let currentChannels = [];
-let allGuilds = [];
-
-// Definición de módulos disponibles
-const modules = [
-    {
-        id: 'welcome',
-        icon: 'fa-hand-wave',
-        title: 'Bienvenidas',
-        description: 'Saluda a los nuevos miembros con mensajes personalizables y roles automáticos.',
-        category: 'Mensajes'
-    },
-    {
-        id: 'farewell',
-        icon: 'fa-door-open',
-        title: 'Despedidas',
-        description: 'Envía mensajes cuando los miembros abandonan el servidor.',
-        category: 'Mensajes'
-    },
-    {
-        id: 'invite-tracker',
-        icon: 'fa-users',
-        title: 'Invite Tracker',
-        description: 'Rastrea quién invita a nuevos usuarios al servidor.',
-        category: 'Mensajes'
-    },
-    {
-        id: 'automod',
-        icon: 'fa-shield-alt',
-        title: 'AutoMod',
-        description: 'Mantén tu servidor seguro con herramientas de moderación automática.',
-        category: 'Moderación'
-    },
-    {
-        id: 'logs',
-        icon: 'fa-clipboard-list',
-        title: 'Logs',
-        description: 'Registra y rastrea automáticamente eventos del servidor para referencia fácil.',
-        category: 'Moderación'
-    },
-    {
-        id: 'infractions',
-        icon: 'fa-gavel',
-        title: 'Infracciones',
-        description: 'Sistema de infracciones para gestionar advertencias y sanciones.',
-        category: 'Moderación'
-    },
-    {
-        id: 'music',
-        icon: 'fa-music',
-        title: 'Música',
-        description: 'Escucha música de alta calidad con tus amigos en el chat de voz.',
-        category: 'Música'
-    },
-    {
-        id: 'general',
-        icon: 'fa-cog',
-        title: 'General',
-        description: 'Configuración general del bot como prefijo y opciones básicas.',
-        category: 'Sistema'
+function openInviteLink(guildId) {
+    const base = 'https://discord.com/api/oauth2/authorize';
+    const clientId = '1200476680280608958';
+    const guildParam = guildId || document.getElementById('invite-modal')?.dataset?.guildId;
+    let inviteUrl = `${base}?client_id=${clientId}&permissions=8&scope=bot%20applications.commands`;
+    if (guildParam) {
+        inviteUrl += `&guild_id=${guildParam}&disable_guild_select=true`;
     }
-];
 
-document.addEventListener('DOMContentLoaded', function() {
-    checkAuth();
+    // Abrir la invitación en una nueva pestaña/ventana
+    const popup = window.open(inviteUrl, '_blank');
+    closeInviteModal();
 
-    setTimeout(() => {
-        if (currentToken) {
-            loadGuilds();
-        }
-    }, 500);
+    // Si no hay guildId, solo mostramos notificación y salimos
+    if (!guildParam) {
+        showNotification('✅ Abre la nueva pestaña y autoriza el bot. Luego vuelve aquí y recarga la página.', 'success');
+        return;
+    }
 
-    // Cerrar modal al hacer clic fuera
-    const modal = document.getElementById('invite-modal');
-    if (modal) {
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) {
-                closeInviteModal();
+    showNotification('🔎 Esperando a que agregues el bot... (detectaré cuando esté en el servidor)', 'success');
+
+    // Hacer polling a /api/guild-config para detectar si el bot fue agregado al guild
+    const POLL_INTERVAL = 5000; // 5s
+    const TIMEOUT = 120000; // 2min
+    const start = Date.now();
+
+    const poll = async () => {
+        try {
+            const resp = await fetch(`/api/guild-config?guildId=${guildParam}&token=${encodeURIComponent(currentToken)}`);
+            const body = await resp.json().catch(() => ({}));
+
+            // Si la respuesta indica que el bot está en el servidor -> actualizar UI y parar
+            if ((resp.ok && body.success && body.botInGuild !== false) || body.botInGuild === true) {
+                updateGuildPresence(guildParam, true);
+                showNotification('✅ Bot detectado en el servidor. Ahora puedes configurar.', 'success');
+                return true;
             }
-        });
-    }
-});
+            // Si la respuesta explícitamente indica que no está
+            if (!resp.ok || body.botInGuild === false) {
+                // seguir esperando hasta timeout
+                return false;
+            }
+        } catch (err) {
+            // ignorar errores y continuar intentos
+            console.error('Polling guild-config error:', err);
+        }
+        return false;
+    };
+
+    let stopped = false;
+
+    const intervalId = setInterval(async () => {
+        // Si popup fue cerrado por el usuario, haremos un último intento y luego paramos
+        if (popup && popup.closed) {
+            // do one last immediate check
+            const ok = await poll();
+            clearInterval(intervalId);
+            stopped = true;
+            if (!ok) {
+                showNotification('⏳ Ventana cerrada. Si invitaste al bot, recarga la página o espera un momento.', 'success');
+            }
+            return;
+        }
+
+        // timeout
+        if (Date.now() - start > TIMEOUT) {
+            clearInterval(intervalId);
+            stopped = true;
+            showNotification('⏱️ Tiempo de espera agotado. Si invitaste al bot, recarga la página o intenta comprobar manualmente.', 'error');
+            return;
+        }
+
+        const added = await poll();
+        if (added) {
+            clearInterval(intervalId);
+            stopped = true;
+        }
+    }, POLL_INTERVAL);
+
+    // Por si acaso, también parcheamos para limpiar si el usuario navega fuera
+    window.addEventListener('beforeunload', () => {
+        if (!stopped) clearInterval(intervalId);
+    });
+}
+
 
 function getCookie(name) {
     const nameEQ = name + "=";
@@ -299,6 +298,16 @@ function displayServers(guilds) {
             botBadge = `<span class="bot-badge bot-unknown" title="Estado del bot desconocido"></span>`;
         }
 
+        // CTA button HTML based on bot presence
+        let ctaHtml = '';
+        if (guild.botInGuild === true) {
+            ctaHtml = `<button class="card-cta cta-config" onclick="event.stopPropagation(); selectGuild('${guild.id}')">Configurar</button>`;
+        } else if (guild.botInGuild === false) {
+            ctaHtml = `<button class="card-cta cta-invite" onclick="event.stopPropagation(); openInviteLink('${guild.id}')">Invitar</button>`;
+        } else {
+            ctaHtml = `<button class="card-cta cta-invite" onclick="event.stopPropagation(); handleServerClick('${guild.id}')">Comprobar</button>`;
+        }
+
         return `
             <div class="server-card" onclick="handleServerClick('${guild.id}')">
                 <div class="server-icon">
@@ -311,6 +320,7 @@ function displayServers(guilds) {
                         <i class="fas fa-crown server-crown"></i>
                     </div>
                     <div class="server-id">${guild.id}</div>
+                    <div style="margin-top:12px">${ctaHtml}</div>
                 </div>
             </div>
         `;
@@ -437,20 +447,7 @@ function closeInviteModal() {
     }
 }
 
-// Abrir enlace de invitación. Si se pasa guildId o si el modal tiene dataset.guildId, se preselecciona el servidor
-function openInviteLink(guildId) {
-    const base = 'https://discord.com/api/oauth2/authorize';
-    const clientId = '1200476680280608958';
-    const guildParam = guildId || document.getElementById('invite-modal')?.dataset?.guildId;
-    let inviteUrl = `${base}?client_id=${clientId}&permissions=8&scope=bot%20applications.commands`;
-    if (guildParam) {
-        inviteUrl += `&guild_id=${guildParam}&disable_guild_select=true`;
-    }
 
-    window.open(inviteUrl, '_blank');
-    closeInviteModal();
-    showNotification('✅ Abre la nueva pestaña y autoriza el bot. Luego vuelve aquí y recarga la página.', 'success');
-}
 
 // Mostrar vista de configuración
 function showConfigView() {
